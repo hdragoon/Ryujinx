@@ -190,11 +190,6 @@ namespace Ryujinx.Configuration
         public class HidSection
         {
             /// <summary>
-            ///  The primary controller's type
-            /// </summary>
-            public ReactiveObject<ControllerType> ControllerType { get; private set; }
-
-            /// <summary>
             /// Enable or disable keyboard support (Independent from controllers binding)
             /// </summary>
             public ReactiveObject<bool> EnableKeyboard { get; private set; }
@@ -202,19 +197,18 @@ namespace Ryujinx.Configuration
             /// <summary>
             /// Keyboard control bindings
             /// </summary>
-            public ReactiveObject<NpadKeyboard> KeyboardControls { get; private set; }
+            public ReactiveObject<NpadKeyboard> KeyboardConfig { get; private set; }
 
             /// <summary>
             /// Controller control bindings
             /// </summary>
-            public ReactiveObject<NpadController> JoystickControls { get; private set; }
+            public ReactiveObject<List<NpadController>> JoystickConfig { get; private set; }
 
             public HidSection()
             {
-                ControllerType   = new ReactiveObject<ControllerType>();
-                EnableKeyboard   = new ReactiveObject<bool>();
-                KeyboardControls = new ReactiveObject<NpadKeyboard>();
-                JoystickControls = new ReactiveObject<NpadController>();
+                EnableKeyboard = new ReactiveObject<bool>();
+                KeyboardConfig = new ReactiveObject<NpadKeyboard>();
+                JoystickConfig = new ReactiveObject<List<NpadController>>();
             }
         }
 
@@ -308,7 +302,6 @@ namespace Ryujinx.Configuration
                 EnableFsIntegrityChecks   = System.EnableFsIntegrityChecks,
                 FsGlobalAccessLogMode     = System.FsGlobalAccessLogMode,
                 IgnoreMissingServices     = System.IgnoreMissingServices,
-                ControllerType            = Hid.ControllerType,
                 GuiColumns                = new GuiColumns()
                 {
                     FavColumn        = Ui.GuiColumns.FavColumn,
@@ -326,8 +319,8 @@ namespace Ryujinx.Configuration
                 EnableCustomTheme         = Ui.EnableCustomTheme,
                 CustomThemePath           = Ui.CustomThemePath,
                 EnableKeyboard            = Hid.EnableKeyboard,
-                KeyboardControls          = Hid.KeyboardControls,
-                JoystickControls          = Hid.JoystickControls
+                KeyboardConfig            = Hid.KeyboardConfig,
+                JoystickConfig            = Hid.JoystickConfig
             };
 
             return configurationFile;
@@ -353,7 +346,6 @@ namespace Ryujinx.Configuration
             System.EnableFsIntegrityChecks.Value   = true;
             System.FsGlobalAccessLogMode.Value     = 0;
             System.IgnoreMissingServices.Value     = false;
-            Hid.ControllerType.Value               = ControllerType.Handheld;
             Ui.GuiColumns.FavColumn.Value          = true;
             Ui.GuiColumns.IconColumn.Value         = true;
             Ui.GuiColumns.AppColumn.Value          = true;
@@ -369,9 +361,11 @@ namespace Ryujinx.Configuration
             Ui.CustomThemePath.Value               = "";
             Hid.EnableKeyboard.Value               = false;
 
-            Hid.KeyboardControls.Value = new NpadKeyboard
+            Hid.KeyboardConfig.Value = new NpadKeyboard
             {
-                LeftJoycon  = new NpadKeyboardLeft
+                ControllerType = ControllerType.Handheld,
+                ControllerId   = ControllerId.ControllerHandheld,
+                LeftJoycon     = new NpadKeyboardLeft
                 {
                     StickUp     = Key.W,
                     StickDown   = Key.S,
@@ -386,7 +380,7 @@ namespace Ryujinx.Configuration
                     ButtonL     = Key.E,
                     ButtonZl    = Key.Q,
                 },
-                RightJoycon = new NpadKeyboardRight
+                RightJoycon    = new NpadKeyboardRight
                 {
                     StickUp     = Key.I,
                     StickDown   = Key.K,
@@ -401,41 +395,46 @@ namespace Ryujinx.Configuration
                     ButtonR     = Key.U,
                     ButtonZr    = Key.O,
                 },
-                Hotkeys     = new KeyboardHotkeys
+                Hotkeys        = new KeyboardHotkeys
                 {
                     ToggleVsync = Key.Tab
                 }
             };
 
-            Hid.JoystickControls.Value = new NpadController
+            Hid.JoystickConfig.Value = new List<NpadController>()
             {
-                Enabled          = true,
-                Index            = 0,
-                Deadzone         = 0.05f,
-                TriggerThreshold = 0.5f,
-                LeftJoycon       = new NpadControllerLeft
+                new NpadController
                 {
-                    Stick       = ControllerInputId.Axis0,
-                    StickButton = ControllerInputId.Button8,
-                    DPadUp      = ControllerInputId.Hat0Up,
-                    DPadDown    = ControllerInputId.Hat0Down,
-                    DPadLeft    = ControllerInputId.Hat0Left,
-                    DPadRight   = ControllerInputId.Hat0Right,
-                    ButtonMinus = ControllerInputId.Button6,
-                    ButtonL     = ControllerInputId.Button4,
-                    ButtonZl    = ControllerInputId.Axis2,
-                },
-                RightJoycon      = new NpadControllerRight
-                {
-                    Stick       = ControllerInputId.Axis3,
-                    StickButton = ControllerInputId.Button9,
-                    ButtonA     = ControllerInputId.Button1,
-                    ButtonB     = ControllerInputId.Button0,
-                    ButtonX     = ControllerInputId.Button3,
-                    ButtonY     = ControllerInputId.Button2,
-                    ButtonPlus  = ControllerInputId.Button7,
-                    ButtonR     = ControllerInputId.Button5,
-                    ButtonZr    = ControllerInputId.Axis5,
+                    Enabled          = true,
+                    Index            = 0,
+                    ControllerType   = ControllerType.ProController,
+                    ControllerId     = ControllerId.ControllerPlayer1,
+                    Deadzone         = 0.05f,
+                    TriggerThreshold = 0.5f,
+                    LeftJoycon       = new NpadControllerLeft
+                    {
+                        Stick       = ControllerInputId.Axis0,
+                        StickButton = ControllerInputId.Button8,
+                        DPadUp      = ControllerInputId.Hat0Up,
+                        DPadDown    = ControllerInputId.Hat0Down,
+                        DPadLeft    = ControllerInputId.Hat0Left,
+                        DPadRight   = ControllerInputId.Hat0Right,
+                        ButtonMinus = ControllerInputId.Button6,
+                        ButtonL     = ControllerInputId.Button4,
+                        ButtonZl    = ControllerInputId.Axis2,
+                    },
+                    RightJoycon      = new NpadControllerRight
+                    {
+                        Stick       = ControllerInputId.Axis3,
+                        StickButton = ControllerInputId.Button9,
+                        ButtonA     = ControllerInputId.Button1,
+                        ButtonB     = ControllerInputId.Button0,
+                        ButtonX     = ControllerInputId.Button3,
+                        ButtonY     = ControllerInputId.Button2,
+                        ButtonPlus  = ControllerInputId.Button7,
+                        ButtonR     = ControllerInputId.Button5,
+                        ButtonZr    = ControllerInputId.Axis5,
+                    }
                 }
             };
         }
@@ -470,7 +469,6 @@ namespace Ryujinx.Configuration
             System.EnableFsIntegrityChecks.Value   = configurationFileFormat.EnableFsIntegrityChecks;
             System.FsGlobalAccessLogMode.Value     = configurationFileFormat.FsGlobalAccessLogMode;
             System.IgnoreMissingServices.Value     = configurationFileFormat.IgnoreMissingServices;
-            Hid.ControllerType.Value               = configurationFileFormat.ControllerType;
             Ui.GuiColumns.FavColumn.Value          = configurationFileFormat.GuiColumns.FavColumn;
             Ui.GuiColumns.IconColumn.Value         = configurationFileFormat.GuiColumns.IconColumn;
             Ui.GuiColumns.AppColumn.Value          = configurationFileFormat.GuiColumns.AppColumn;
@@ -485,8 +483,8 @@ namespace Ryujinx.Configuration
             Ui.EnableCustomTheme.Value             = configurationFileFormat.EnableCustomTheme;
             Ui.CustomThemePath.Value               = configurationFileFormat.CustomThemePath;
             Hid.EnableKeyboard.Value               = configurationFileFormat.EnableKeyboard;
-            Hid.KeyboardControls.Value             = configurationFileFormat.KeyboardControls;
-            Hid.JoystickControls.Value             = configurationFileFormat.JoystickControls;
+            Hid.KeyboardConfig.Value               = configurationFileFormat.KeyboardConfig;
+            Hid.JoystickConfig.Value               = configurationFileFormat.JoystickConfig;
         }
 
         public static void Initialize()

@@ -1,11 +1,13 @@
 using OpenTK;
 using OpenTK.Graphics;
 using OpenTK.Input;
+using Ryujinx.Common.Configuration.Hid;
 using Ryujinx.Configuration;
 using Ryujinx.Graphics.OpenGL;
 using Ryujinx.HLE;
 using Ryujinx.HLE.Input;
 using System;
+using System.Linq;
 using System.Threading;
 
 using Stopwatch = System.Diagnostics.Stopwatch;
@@ -29,8 +31,6 @@ namespace Ryujinx.Ui
 
         private MouseState? _mouse = null;
 
-        private Input.NpadController _primaryController;
-
         private Thread _renderThread;
 
         private bool _resizeEvent;
@@ -53,8 +53,6 @@ namespace Ryujinx.Ui
             }
 
             _renderer = (Renderer)device.Gpu.Renderer;
-
-            _primaryController = new Input.NpadController(ConfigurationState.Instance.Hid.JoystickControls);
 
             Location = new Point(
                 (DisplayDevice.Default.Width  / 2) - (Width  / 2),
@@ -144,16 +142,27 @@ namespace Ryujinx.Ui
 
         private new void UpdateFrame()
         {
-            HotkeyButtons       currentHotkeyButtons = 0;
-            ControllerButtons   currentButton = 0;
-            JoystickPosition    leftJoystick;
-            JoystickPosition    rightJoystick;
+            HotkeyButtons currentHotkeyButtons = 0;
+
+            ControllerButtons currentButtonKeyboard = 0;
+            JoystickPosition  leftJoystickKeyboard;
+            JoystickPosition  rightJoystickKeyboard;
+
+            ControllerButtons[] currentButtonController = new ControllerButtons[ConfigurationState.Instance.Hid.JoystickConfig.Value.Count];
+            JoystickPosition[]  leftJoystickController  = new JoystickPosition[ConfigurationState.Instance.Hid.JoystickConfig.Value.Count];
+            JoystickPosition[]  rightJoystickController = new JoystickPosition[ConfigurationState.Instance.Hid.JoystickConfig.Value.Count];
+
             HLE.Input.Keyboard? hidKeyboard = null;
 
-            int leftJoystickDx  = 0;
-            int leftJoystickDy  = 0;
-            int rightJoystickDx = 0;
-            int rightJoystickDy = 0;
+            int leftJoystickDxKeyboard  = 0;
+            int leftJoystickDyKeyboard  = 0;
+            int rightJoystickDxKeyboard = 0;
+            int rightJoystickDyKeyboard = 0;
+
+            int[] leftJoystickDxController  = new int[ConfigurationState.Instance.Hid.JoystickConfig.Value.Count];
+            int[] leftJoystickDyController  = new int[ConfigurationState.Instance.Hid.JoystickConfig.Value.Count];
+            int[] rightJoystickDxController = new int[ConfigurationState.Instance.Hid.JoystickConfig.Value.Count];
+            int[] rightJoystickDyController = new int[ConfigurationState.Instance.Hid.JoystickConfig.Value.Count];
 
             // Keyboard Input
             if (_keyboard.HasValue)
@@ -161,16 +170,16 @@ namespace Ryujinx.Ui
                 KeyboardState keyboard = _keyboard.Value;
 
                 // Normal Input
-                currentHotkeyButtons = KeyboardControls.GetHotkeyButtons(ConfigurationState.Instance.Hid.KeyboardControls, keyboard);
-                currentButton        = KeyboardControls.GetButtons(ConfigurationState.Instance.Hid.KeyboardControls, keyboard);
+                currentHotkeyButtons  = KeyboardControls.GetHotkeyButtons(ConfigurationState.Instance.Hid.KeyboardConfig, keyboard);
+                currentButtonKeyboard = KeyboardControls.GetButtons(ConfigurationState.Instance.Hid.KeyboardConfig, keyboard);
 
                 if (ConfigurationState.Instance.Hid.EnableKeyboard)
                 {
-                    hidKeyboard = KeyboardControls.GetKeysDown(ConfigurationState.Instance.Hid.KeyboardControls, keyboard);
+                    hidKeyboard = KeyboardControls.GetKeysDown(ConfigurationState.Instance.Hid.KeyboardConfig, keyboard);
                 }
 
-                (leftJoystickDx, leftJoystickDy)   = KeyboardControls.GetLeftStick(ConfigurationState.Instance.Hid.KeyboardControls, keyboard);
-                (rightJoystickDx, rightJoystickDy) = KeyboardControls.GetRightStick(ConfigurationState.Instance.Hid.KeyboardControls, keyboard);
+                (leftJoystickDxKeyboard,  leftJoystickDyKeyboard)  = KeyboardControls.GetLeftStick(ConfigurationState.Instance.Hid.KeyboardConfig, keyboard);
+                (rightJoystickDxKeyboard, rightJoystickDyKeyboard) = KeyboardControls.GetRightStick(ConfigurationState.Instance.Hid.KeyboardConfig, keyboard);
             }
 
             if (!hidKeyboard.HasValue)
@@ -181,34 +190,53 @@ namespace Ryujinx.Ui
                     Keys     = new int[0x8]
                 };
             }
-
-            currentButton |= _primaryController.GetButtons();
-
-            // Keyboard has priority stick-wise
-            if (leftJoystickDx == 0 && leftJoystickDy == 0)
+            
+            leftJoystickKeyboard = new JoystickPosition
             {
-                (leftJoystickDx, leftJoystickDy) = _primaryController.GetLeftStick();
-            }
-
-            if (rightJoystickDx == 0 && rightJoystickDy == 0)
-            {
-                (rightJoystickDx, rightJoystickDy) = _primaryController.GetRightStick();
-            }
-
-            leftJoystick = new JoystickPosition
-            {
-                Dx = leftJoystickDx,
-                Dy = leftJoystickDy
+                Dx = leftJoystickDxKeyboard,
+                Dy = leftJoystickDyKeyboard
             };
 
-            rightJoystick = new JoystickPosition
+            rightJoystickKeyboard = new JoystickPosition
             {
-                Dx = rightJoystickDx,
-                Dy = rightJoystickDy
+                Dx = rightJoystickDxKeyboard,
+                Dy = rightJoystickDyKeyboard
             };
 
-            currentButton |= _device.Hid.UpdateStickButtons(leftJoystick, rightJoystick);
+            currentButtonKeyboard |= _device.Hid.UpdateStickButtons(leftJoystickKeyboard, rightJoystickKeyboard);
 
+            BaseController keyboardController = _device.Hid.KeyboardController;
+            keyboardController.SendInput(currentButtonKeyboard, leftJoystickKeyboard, rightJoystickKeyboard);
+
+            // Controller Input
+            for (int i = 0; i < ConfigurationState.Instance.Hid.JoystickConfig.Value.Count; i++)
+            {
+                Input.NpadController controllerInput = new Input.NpadController(ConfigurationState.Instance.Hid.JoystickConfig.Value[i]);
+
+                currentButtonController[i] |= controllerInput.GetButtons();
+
+                (leftJoystickDxController[i],  leftJoystickDyController[i])  = controllerInput.GetLeftStick();
+                (rightJoystickDxController[i], rightJoystickDyController[i]) = controllerInput.GetRightStick();
+
+                leftJoystickController[i] = new JoystickPosition
+                {
+                    Dx = leftJoystickDxController[i],
+                    Dy = leftJoystickDyController[i]
+                };
+
+                rightJoystickController[i] = new JoystickPosition
+                {
+                    Dx = rightJoystickDxController[i],
+                    Dy = rightJoystickDyController[i]
+                };
+
+                currentButtonController[i] |= _device.Hid.UpdateStickButtons(leftJoystickController[i], rightJoystickController[i]);
+
+                BaseController controller = _device.Hid.Controllers[i];
+                controller.SendInput(currentButtonController[i], leftJoystickController[i], rightJoystickController[i]);
+            }
+
+            //Touchscreen
             bool hasTouch = false;
 
             // Get screen touch position from left mouse click
@@ -272,10 +300,6 @@ namespace Ryujinx.Ui
             {
                 _device.Hid.WriteKeyboard(hidKeyboard.Value);
             }
-
-            BaseController controller = _device.Hid.PrimaryController;
-
-            controller.SendInput(currentButton, leftJoystick, rightJoystick);
 
             // Toggle vsync
             if (currentHotkeyButtons.HasFlag(HotkeyButtons.ToggleVSync) &&

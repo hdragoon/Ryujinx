@@ -1,6 +1,7 @@
 using Gtk;
 using JsonPrettyPrinterPlus;
 using Ryujinx.Audio;
+using Ryujinx.Common.Configuration.Hid;
 using Ryujinx.Common.Logging;
 using Ryujinx.Configuration;
 using Ryujinx.Debugger.Profiler;
@@ -382,7 +383,12 @@ namespace Ryujinx.Ui
 
         private void CreateGameWindow(HLE.Switch device)
         {
-            device.Hid.InitializePrimaryController(ConfigurationState.Instance.Hid.ControllerType);
+            foreach (NpadController controller in ConfigurationState.Instance.Hid.JoystickConfig.Value)
+            {
+                device.Hid.InitializeController(controller.ControllerId, controller.ControllerType);
+            }
+            
+            device.Hid.InitializeKeyboard(ConfigurationState.Instance.Hid.KeyboardConfig.Value.ControllerId, ConfigurationState.Instance.Hid.KeyboardConfig.Value.ControllerType);
 
             using (_screen = new GlScreen(device))
             {

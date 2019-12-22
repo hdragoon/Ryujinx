@@ -1,4 +1,6 @@
-﻿namespace Ryujinx.Common.Configuration.Hid
+﻿using Ryujinx.Configuration.Hid;
+
+namespace Ryujinx.Common.Configuration.Hid
 {
     public class NpadController
     {
@@ -11,6 +13,16 @@
         /// Controller Device Index
         /// </summary>
         public int Index;
+
+        /// <summary>
+        ///  Controller's Type
+        /// </summary>
+        public ControllerType ControllerType;
+
+        /// <summary>
+        ///  Controller's ID
+        /// </summary>
+        public ControllerId ControllerId;
 
         /// <summary>
         /// Controller Analog Stick Deadzone

@@ -109,11 +109,6 @@ namespace Ryujinx.Configuration
         public bool IgnoreMissingServices { get; set; }
 
         /// <summary>
-        ///  The primary controller's type
-        /// </summary>
-        public ControllerType ControllerType { get; set; }
-
-        /// <summary>
         /// Used to toggle columns in the GUI
         /// </summary>
         public GuiColumns GuiColumns { get; set; }
@@ -141,12 +136,12 @@ namespace Ryujinx.Configuration
         /// <summary>
         /// Keyboard control bindings
         /// </summary>
-        public NpadKeyboard KeyboardControls { get; set; }
+        public NpadKeyboard KeyboardConfig { get; set; }
 
         /// <summary>
         /// Controller control bindings
         /// </summary>
-        public NpadController JoystickControls { get; set; }
+        public List<NpadController> JoystickConfig { get; set; }
 
         /// <summary>
         /// Loads a configuration file from disk

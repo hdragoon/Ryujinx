@@ -197,33 +197,33 @@ namespace Ryujinx.Ui
             }
 
             _systemLanguageSelect.SetActiveId(ConfigurationState.Instance.System.Language.Value.ToString());
-            _controller1Type     .SetActiveId(ConfigurationState.Instance.Hid.ControllerType.Value.ToString());
+            _controller1Type     .SetActiveId(ConfigurationState.Instance.Hid.KeyboardConfig.Value.ControllerType.ToString());
             Controller_Changed(null, null, _controller1Type.ActiveId, _controller1Image);
 
-            _lStickUp1.Label     = ConfigurationState.Instance.Hid.KeyboardControls.Value.LeftJoycon.StickUp.ToString();
-            _lStickDown1.Label   = ConfigurationState.Instance.Hid.KeyboardControls.Value.LeftJoycon.StickDown.ToString();
-            _lStickLeft1.Label   = ConfigurationState.Instance.Hid.KeyboardControls.Value.LeftJoycon.StickLeft.ToString();
-            _lStickRight1.Label  = ConfigurationState.Instance.Hid.KeyboardControls.Value.LeftJoycon.StickRight.ToString();
-            _lStickButton1.Label = ConfigurationState.Instance.Hid.KeyboardControls.Value.LeftJoycon.StickButton.ToString();
-            _dpadUp1.Label       = ConfigurationState.Instance.Hid.KeyboardControls.Value.LeftJoycon.DPadUp.ToString();
-            _dpadDown1.Label     = ConfigurationState.Instance.Hid.KeyboardControls.Value.LeftJoycon.DPadDown.ToString();
-            _dpadLeft1.Label     = ConfigurationState.Instance.Hid.KeyboardControls.Value.LeftJoycon.DPadLeft.ToString();
-            _dpadRight1.Label    = ConfigurationState.Instance.Hid.KeyboardControls.Value.LeftJoycon.DPadRight.ToString();
-            _minus1.Label        = ConfigurationState.Instance.Hid.KeyboardControls.Value.LeftJoycon.ButtonMinus.ToString();
-            _l1.Label            = ConfigurationState.Instance.Hid.KeyboardControls.Value.LeftJoycon.ButtonL.ToString();
-            _zL1.Label           = ConfigurationState.Instance.Hid.KeyboardControls.Value.LeftJoycon.ButtonZl.ToString();
-            _rStickUp1.Label     = ConfigurationState.Instance.Hid.KeyboardControls.Value.RightJoycon.StickUp.ToString();
-            _rStickDown1.Label   = ConfigurationState.Instance.Hid.KeyboardControls.Value.RightJoycon.StickDown.ToString();
-            _rStickLeft1.Label   = ConfigurationState.Instance.Hid.KeyboardControls.Value.RightJoycon.StickLeft.ToString();
-            _rStickRight1.Label  = ConfigurationState.Instance.Hid.KeyboardControls.Value.RightJoycon.StickRight.ToString();
-            _rStickButton1.Label = ConfigurationState.Instance.Hid.KeyboardControls.Value.RightJoycon.StickButton.ToString();
-            _a1.Label            = ConfigurationState.Instance.Hid.KeyboardControls.Value.RightJoycon.ButtonA.ToString();
-            _b1.Label            = ConfigurationState.Instance.Hid.KeyboardControls.Value.RightJoycon.ButtonB.ToString();
-            _x1.Label            = ConfigurationState.Instance.Hid.KeyboardControls.Value.RightJoycon.ButtonX.ToString();
-            _y1.Label            = ConfigurationState.Instance.Hid.KeyboardControls.Value.RightJoycon.ButtonY.ToString();
-            _plus1.Label         = ConfigurationState.Instance.Hid.KeyboardControls.Value.RightJoycon.ButtonPlus.ToString();
-            _r1.Label            = ConfigurationState.Instance.Hid.KeyboardControls.Value.RightJoycon.ButtonR.ToString();
-            _zR1.Label           = ConfigurationState.Instance.Hid.KeyboardControls.Value.RightJoycon.ButtonZr.ToString();
+            _lStickUp1.Label     = ConfigurationState.Instance.Hid.KeyboardConfig.Value.LeftJoycon.StickUp.ToString();
+            _lStickDown1.Label   = ConfigurationState.Instance.Hid.KeyboardConfig.Value.LeftJoycon.StickDown.ToString();
+            _lStickLeft1.Label   = ConfigurationState.Instance.Hid.KeyboardConfig.Value.LeftJoycon.StickLeft.ToString();
+            _lStickRight1.Label  = ConfigurationState.Instance.Hid.KeyboardConfig.Value.LeftJoycon.StickRight.ToString();
+            _lStickButton1.Label = ConfigurationState.Instance.Hid.KeyboardConfig.Value.LeftJoycon.StickButton.ToString();
+            _dpadUp1.Label       = ConfigurationState.Instance.Hid.KeyboardConfig.Value.LeftJoycon.DPadUp.ToString();
+            _dpadDown1.Label     = ConfigurationState.Instance.Hid.KeyboardConfig.Value.LeftJoycon.DPadDown.ToString();
+            _dpadLeft1.Label     = ConfigurationState.Instance.Hid.KeyboardConfig.Value.LeftJoycon.DPadLeft.ToString();
+            _dpadRight1.Label    = ConfigurationState.Instance.Hid.KeyboardConfig.Value.LeftJoycon.DPadRight.ToString();
+            _minus1.Label        = ConfigurationState.Instance.Hid.KeyboardConfig.Value.LeftJoycon.ButtonMinus.ToString();
+            _l1.Label            = ConfigurationState.Instance.Hid.KeyboardConfig.Value.LeftJoycon.ButtonL.ToString();
+            _zL1.Label           = ConfigurationState.Instance.Hid.KeyboardConfig.Value.LeftJoycon.ButtonZl.ToString();
+            _rStickUp1.Label     = ConfigurationState.Instance.Hid.KeyboardConfig.Value.RightJoycon.StickUp.ToString();
+            _rStickDown1.Label   = ConfigurationState.Instance.Hid.KeyboardConfig.Value.RightJoycon.StickDown.ToString();
+            _rStickLeft1.Label   = ConfigurationState.Instance.Hid.KeyboardConfig.Value.RightJoycon.StickLeft.ToString();
+            _rStickRight1.Label  = ConfigurationState.Instance.Hid.KeyboardConfig.Value.RightJoycon.StickRight.ToString();
+            _rStickButton1.Label = ConfigurationState.Instance.Hid.KeyboardConfig.Value.RightJoycon.StickButton.ToString();
+            _a1.Label            = ConfigurationState.Instance.Hid.KeyboardConfig.Value.RightJoycon.ButtonA.ToString();
+            _b1.Label            = ConfigurationState.Instance.Hid.KeyboardConfig.Value.RightJoycon.ButtonB.ToString();
+            _x1.Label            = ConfigurationState.Instance.Hid.KeyboardConfig.Value.RightJoycon.ButtonX.ToString();
+            _y1.Label            = ConfigurationState.Instance.Hid.KeyboardConfig.Value.RightJoycon.ButtonY.ToString();
+            _plus1.Label         = ConfigurationState.Instance.Hid.KeyboardConfig.Value.RightJoycon.ButtonPlus.ToString();
+            _r1.Label            = ConfigurationState.Instance.Hid.KeyboardConfig.Value.RightJoycon.ButtonR.ToString();
+            _zR1.Label           = ConfigurationState.Instance.Hid.KeyboardConfig.Value.RightJoycon.ButtonZr.ToString();
 
             _custThemePath.Buffer.Text           = ConfigurationState.Instance.Ui.CustomThemePath;
             _graphicsShadersDumpPath.Buffer.Text = ConfigurationState.Instance.Graphics.ShadersDumpPath;
@@ -397,7 +397,7 @@ namespace Ryujinx.Ui
             ConfigurationState.Instance.Hid.EnableKeyboard.Value               = _directKeyboardAccess.Active;
             ConfigurationState.Instance.Ui.EnableCustomTheme.Value             = _custThemeToggle.Active;
 
-            ConfigurationState.Instance.Hid.KeyboardControls.Value.LeftJoycon = new NpadKeyboardLeft()
+            ConfigurationState.Instance.Hid.KeyboardConfig.Value.LeftJoycon = new NpadKeyboardLeft()
             {
                 StickUp     = (Configuration.Hid.Key)Enum.Parse(typeof(Configuration.Hid.Key), _lStickUp1.Label),
                 StickDown   = (Configuration.Hid.Key)Enum.Parse(typeof(Configuration.Hid.Key), _lStickDown1.Label),
@@ -413,7 +413,7 @@ namespace Ryujinx.Ui
                 ButtonZl    = (Configuration.Hid.Key)Enum.Parse(typeof(Configuration.Hid.Key), _zL1.Label),
             };
 
-            ConfigurationState.Instance.Hid.KeyboardControls.Value.RightJoycon = new NpadKeyboardRight()
+            ConfigurationState.Instance.Hid.KeyboardConfig.Value.RightJoycon = new NpadKeyboardRight()
             {
                 StickUp     = (Configuration.Hid.Key)Enum.Parse(typeof(Configuration.Hid.Key), _rStickUp1.Label),
                 StickDown   = (Configuration.Hid.Key)Enum.Parse(typeof(Configuration.Hid.Key), _rStickDown1.Label),
@@ -429,8 +429,9 @@ namespace Ryujinx.Ui
                 ButtonZr    = (Configuration.Hid.Key)Enum.Parse(typeof(Configuration.Hid.Key), _zR1.Label),
             };
 
+            ConfigurationState.Instance.Hid.KeyboardConfig.Value.ControllerType = (ControllerType)Enum.Parse(typeof(ControllerType), _controller1Type.ActiveId);
+
             ConfigurationState.Instance.System.Language.Value              = (Language)Enum.Parse(typeof(Language), _systemLanguageSelect.ActiveId);
-            ConfigurationState.Instance.Hid.ControllerType.Value           = (ControllerType)Enum.Parse(typeof(ControllerType), _controller1Type.ActiveId);
             ConfigurationState.Instance.Ui.CustomThemePath.Value           = _custThemePath.Buffer.Text;
             ConfigurationState.Instance.Graphics.ShadersDumpPath.Value     = _graphicsShadersDumpPath.Buffer.Text;
             ConfigurationState.Instance.Ui.GameDirs.Value                  = gameDirs;
