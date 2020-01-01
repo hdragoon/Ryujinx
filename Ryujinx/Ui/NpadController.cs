@@ -56,7 +56,7 @@ namespace Ryujinx.Ui.Input
             return buttons;
         }
 
-        private bool IsActivated(JoystickState joystickState,ControllerInputId controllerInputId)
+        private bool IsActivated(JoystickState joystickState, ControllerInputId controllerInputId)
         {
             if (controllerInputId <= ControllerInputId.Button20)
             {

@@ -14,5 +14,7 @@
         public Key ButtonPlus;
         public Key ButtonR;
         public Key ButtonZr;
+        public Key ButtonSr;
+        public Key ButtonHome;
     }
 }

@@ -49,7 +49,9 @@
             "dpad_right": "Right",
             "button_minus": "Minus",
             "button_l": "E",
-            "button_zl": "Q"
+            "button_zl": "Q",
+            "button_sl": "R",
+            "button_capture": "T"
         },
         "right_joycon": {
             "stick_up": "I",
@@ -63,7 +65,9 @@
             "button_y": "V",
             "button_plus": "Plus",
             "button_r": "U",
-            "button_zr": "O"
+            "button_zr": "O",
+            "button_sr": "Y",
+            "button_home": "G"
         },
         "hotkeys": {
             "toggle_vsync": "Tab"

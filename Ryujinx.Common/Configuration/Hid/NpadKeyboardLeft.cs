@@ -14,5 +14,7 @@
         public Key ButtonMinus;
         public Key ButtonL;
         public Key ButtonZl;
+        public Key ButtonSl;
+        public Key ButtonCapture;
     }
 }

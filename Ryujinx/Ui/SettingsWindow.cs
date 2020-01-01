@@ -1,0 +1,282 @@
+﻿using Gtk;
+using Ryujinx.Configuration;
+using Ryujinx.Configuration.System;
+using Ryujinx.Configuration.Hid;
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Reflection;
+
+using GUI = Gtk.Builder.ObjectAttribute;
+
+namespace Ryujinx.Ui
+{
+    public class SettingsWindow : Window
+    {
+        private static ListStore _gameDirsBoxStore;
+
+#pragma warning disable CS0649
+#pragma warning disable IDE0044
+        [GUI] Window       _settingsWin;
+        [GUI] CheckButton  _errorLogToggle;
+        [GUI] CheckButton  _warningLogToggle;
+        [GUI] CheckButton  _infoLogToggle;
+        [GUI] CheckButton  _stubLogToggle;
+        [GUI] CheckButton  _debugLogToggle;
+        [GUI] CheckButton  _fileLogToggle;
+        [GUI] CheckButton  _guestLogToggle;
+        [GUI] CheckButton  _fsAccessLogToggle;
+        [GUI] Adjustment   _fsLogSpinAdjustment;
+        [GUI] CheckButton  _dockedModeToggle;
+        [GUI] CheckButton  _discordToggle;
+        [GUI] CheckButton  _vSyncToggle;
+        [GUI] CheckButton  _multiSchedToggle;
+        [GUI] CheckButton  _fsicToggle;
+        [GUI] CheckButton  _ignoreToggle;
+        [GUI] CheckButton  _directKeyboardAccess;
+        [GUI] ComboBoxText _systemLanguageSelect;
+        [GUI] CheckButton  _custThemeToggle;
+        [GUI] Entry        _custThemePath;
+        [GUI] ToggleButton _browseThemePath;
+        [GUI] Label        _custThemePathLabel;
+        [GUI] TreeView     _gameDirsBox;
+        [GUI] Entry        _addGameDirBox;
+        [GUI] ToggleButton _addDir;
+        [GUI] ToggleButton _browseDir;
+        [GUI] ToggleButton _removeDir;
+        [GUI] Entry        _logPath;
+        [GUI] Entry        _graphicsShadersDumpPath;
+        [GUI] ComboBoxText _controllerId;
+        [GUI] ToggleButton _configureControllerButton;
+#pragma warning restore CS0649
+#pragma warning restore IDE0044
+
+        public SettingsWindow() : this(new Builder("Ryujinx.Ui.SettingsWindow.glade")) { }
+
+        private SettingsWindow(Builder builder) : base(builder.GetObject("_settingsWin").Handle)
+        {
+            builder.Autoconnect(this);
+
+            _settingsWin.Icon = new Gdk.Pixbuf(Assembly.GetExecutingAssembly(), "Ryujinx.Ui.assets.Icon.png");
+            
+            //Setup Currents
+            if (ConfigurationState.Instance.Logger.EnableFileLog)
+            {
+                _fileLogToggle.Click();
+            }
+
+            if (ConfigurationState.Instance.Logger.EnableError)
+            {
+                _errorLogToggle.Click();
+            }
+
+            if (ConfigurationState.Instance.Logger.EnableWarn)
+            {
+                _warningLogToggle.Click();
+            }
+
+            if (ConfigurationState.Instance.Logger.EnableInfo)
+            {
+                _infoLogToggle.Click();
+            }
+
+            if (ConfigurationState.Instance.Logger.EnableStub)
+            {
+                _stubLogToggle.Click();
+            }
+
+            if (ConfigurationState.Instance.Logger.EnableDebug)
+            {
+                _debugLogToggle.Click();
+            }
+
+            if (ConfigurationState.Instance.Logger.EnableGuest)
+            {
+                _guestLogToggle.Click();
+            }
+
+            if (ConfigurationState.Instance.Logger.EnableFsAccessLog)
+            {
+                _fsAccessLogToggle.Click();
+            }
+
+            if (ConfigurationState.Instance.System.EnableDockedMode)
+            {
+                _dockedModeToggle.Click();
+            }
+
+            if (ConfigurationState.Instance.EnableDiscordIntegration)
+            {
+                _discordToggle.Click();
+            }
+
+            if (ConfigurationState.Instance.Graphics.EnableVsync)
+            {
+                _vSyncToggle.Click();
+            }
+
+            if (ConfigurationState.Instance.System.EnableMulticoreScheduling)
+            {
+                _multiSchedToggle.Click();
+            }
+
+            if (ConfigurationState.Instance.System.EnableFsIntegrityChecks)
+            {
+                _fsicToggle.Click();
+            }
+
+            if (ConfigurationState.Instance.System.IgnoreMissingServices)
+            {
+                _ignoreToggle.Click();
+            }
+
+            if (ConfigurationState.Instance.Hid.EnableKeyboard)
+            {
+                _directKeyboardAccess.Click();
+            }
+
+            if (ConfigurationState.Instance.Ui.EnableCustomTheme)
+            {
+                _custThemeToggle.Click();
+            }
+
+            _systemLanguageSelect.SetActiveId(ConfigurationState.Instance.System.Language.Value.ToString());
+
+            _custThemePath.Buffer.Text           = ConfigurationState.Instance.Ui.CustomThemePath;
+            _graphicsShadersDumpPath.Buffer.Text = ConfigurationState.Instance.Graphics.ShadersDumpPath;
+            _fsLogSpinAdjustment.Value           = ConfigurationState.Instance.System.FsGlobalAccessLogMode;
+
+            _gameDirsBox.AppendColumn("", new CellRendererText(), "text", 0);
+            _gameDirsBoxStore  = new ListStore(typeof(string));
+            _gameDirsBox.Model = _gameDirsBoxStore;
+            foreach (string gameDir in ConfigurationState.Instance.Ui.GameDirs.Value)
+            {
+                _gameDirsBoxStore.AppendValues(gameDir);
+            }
+
+            if (_custThemeToggle.Active == false)
+            {
+                _custThemePath.Sensitive      = false;
+                _custThemePathLabel.Sensitive = false;
+                _browseThemePath.Sensitive    = false;
+            }
+
+            _logPath.Buffer.Text = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Ryujinx.log");
+        }
+
+        //Events
+        private void AddDir_Pressed(object sender, EventArgs args)
+        {
+            if (Directory.Exists(_addGameDirBox.Buffer.Text))
+            {
+                _gameDirsBoxStore.AppendValues(_addGameDirBox.Buffer.Text);
+            }
+
+            _addDir.SetStateFlags(0, true);
+        }
+
+        private void BrowseDir_Pressed(object sender, EventArgs args)
+        {
+            FileChooserDialog fileChooser = new FileChooserDialog("Choose the game directory to add to the list", this, FileChooserAction.SelectFolder, "Cancel", ResponseType.Cancel, "Add", ResponseType.Accept);
+
+            if (fileChooser.Run() == (int)ResponseType.Accept)
+            {
+                _gameDirsBoxStore.AppendValues(fileChooser.Filename);
+            }
+
+            fileChooser.Dispose();
+
+            _browseDir.SetStateFlags(0, true);
+        }
+
+        private void RemoveDir_Pressed(object sender, EventArgs args)
+        {
+            TreeSelection selection = _gameDirsBox.Selection;
+
+            selection.GetSelected(out TreeIter treeIter);
+            _gameDirsBoxStore.Remove(ref treeIter);
+
+            _removeDir.SetStateFlags(0, true);
+        }
+
+        private void CustThemeToggle_Activated(object sender, EventArgs args)
+        {
+            _custThemePath.Sensitive      = _custThemeToggle.Active;
+            _custThemePathLabel.Sensitive = _custThemeToggle.Active;
+            _browseThemePath.Sensitive    = _custThemeToggle.Active;
+        }
+
+        private void BrowseThemeDir_Pressed(object sender, EventArgs args)
+        {
+            FileChooserDialog fileChooser = new FileChooserDialog("Choose the theme to load", this, FileChooserAction.Open, "Cancel", ResponseType.Cancel, "Select", ResponseType.Accept);
+
+            fileChooser.Filter = new FileFilter();
+            fileChooser.Filter.AddPattern("*.css");
+
+            if (fileChooser.Run() == (int)ResponseType.Accept)
+            {
+                _custThemePath.Buffer.Text = fileChooser.Filename;
+            }
+
+            fileChooser.Dispose();
+
+            _browseThemePath.SetStateFlags(0, true);
+        }
+
+        private void ConfigureController_Pressed(object sender, EventArgs args)
+        {
+            _configureControllerButton.SetStateFlags(0, true);
+            ControllerId controllerId = (ControllerId)Enum.Parse(typeof(ControllerId), _controllerId.ActiveId);
+
+            ControllerWindow controllerWin = new ControllerWindow(controllerId);
+            controllerWin.Show();
+        }
+
+        private void SaveToggle_Activated(object sender, EventArgs args)
+        {
+            List<string> gameDirs = new List<string>();
+
+            _gameDirsBoxStore.GetIterFirst(out TreeIter treeIter);
+            for (int i = 0; i < _gameDirsBoxStore.IterNChildren(); i++)
+            {
+                _gameDirsBoxStore.GetValue(treeIter, i);
+
+                gameDirs.Add((string)_gameDirsBoxStore.GetValue(treeIter, 0));
+
+                _gameDirsBoxStore.IterNext(ref treeIter);
+            }
+
+            ConfigurationState.Instance.Logger.EnableError.Value               = _errorLogToggle.Active;
+            ConfigurationState.Instance.Logger.EnableWarn.Value                = _warningLogToggle.Active;
+            ConfigurationState.Instance.Logger.EnableInfo.Value                = _infoLogToggle.Active;
+            ConfigurationState.Instance.Logger.EnableStub.Value                = _stubLogToggle.Active;
+            ConfigurationState.Instance.Logger.EnableDebug.Value               = _debugLogToggle.Active;
+            ConfigurationState.Instance.Logger.EnableGuest.Value               = _guestLogToggle.Active;
+            ConfigurationState.Instance.Logger.EnableFsAccessLog.Value         = _fsAccessLogToggle.Active;
+            ConfigurationState.Instance.Logger.EnableFileLog.Value             = _fileLogToggle.Active;
+            ConfigurationState.Instance.System.EnableDockedMode.Value          = _dockedModeToggle.Active;
+            ConfigurationState.Instance.EnableDiscordIntegration.Value         = _discordToggle.Active;
+            ConfigurationState.Instance.Graphics.EnableVsync.Value             = _vSyncToggle.Active;
+            ConfigurationState.Instance.System.EnableMulticoreScheduling.Value = _multiSchedToggle.Active;
+            ConfigurationState.Instance.System.EnableFsIntegrityChecks.Value   = _fsicToggle.Active;
+            ConfigurationState.Instance.System.IgnoreMissingServices.Value     = _ignoreToggle.Active;
+            ConfigurationState.Instance.Hid.EnableKeyboard.Value               = _directKeyboardAccess.Active;
+            ConfigurationState.Instance.Ui.EnableCustomTheme.Value             = _custThemeToggle.Active;
+            ConfigurationState.Instance.System.Language.Value                  = (Language)Enum.Parse(typeof(Language), _systemLanguageSelect.ActiveId);
+            ConfigurationState.Instance.Ui.CustomThemePath.Value               = _custThemePath.Buffer.Text;
+            ConfigurationState.Instance.Graphics.ShadersDumpPath.Value         = _graphicsShadersDumpPath.Buffer.Text;
+            ConfigurationState.Instance.Ui.GameDirs.Value                      = gameDirs;
+            ConfigurationState.Instance.System.FsGlobalAccessLogMode.Value     = (int)_fsLogSpinAdjustment.Value;
+
+            MainWindow.SaveConfig();
+            MainWindow.ApplyTheme();
+            MainWindow.UpdateGameTable();
+            Dispose();
+        }
+
+        private void CloseToggle_Activated(object sender, EventArgs args)
+        {
+            Dispose();
+        }
+    }
+}

@@ -821,7 +821,7 @@ namespace Ryujinx.Ui
 
         private void Settings_Pressed(object sender, EventArgs args)
         {
-            SwitchSettings settingsWin = new SwitchSettings();
+            SettingsWindow settingsWin = new SettingsWindow();
             settingsWin.Show();
         }
 
