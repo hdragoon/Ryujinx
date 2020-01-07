@@ -35,7 +35,7 @@
     "custom_theme_path": "",
     "enable_keyboard": false,
     "keyboard_config": {
-		"controller_type": "Handheld",
+    "controller_type": "Handheld",
         "controller_id": "ControllerHandheld",
         "left_joycon": {
             "stick_up": "W",
@@ -73,7 +73,6 @@
     },
     "joystick_config": [
         {
-            "enabled": true,
             "index": 0,
             "controller_type": "ProController",
             "controller_id": "ControllerPlayer1",

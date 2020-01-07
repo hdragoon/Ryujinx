@@ -45,7 +45,6 @@ namespace Ryujinx.Ui
         private static TreeView _treeView;
 
         private static Debugger.Debugger _debugger;
-
 #pragma warning disable CS0649
 #pragma warning disable IDE0044
         [GUI] Window        _mainWin;
@@ -108,8 +107,6 @@ namespace Ryujinx.Ui
 
             // Make sure that everything is loaded.
             _virtualFileSystem.Reload();
-
-            _treeView = _gameTable;
 
             ApplyTheme();
 

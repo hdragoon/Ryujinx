@@ -402,11 +402,10 @@ namespace Ryujinx.Configuration
                 }
             };
 
-            Hid.JoystickConfig.Value = new List<NpadController>()
+            Hid.JoystickConfig.Value = new List<NpadController>
             {
                 new NpadController
                 {
-                    Enabled          = true,
                     Index            = 0,
                     ControllerType   = ControllerType.ProController,
                     ControllerId     = ControllerId.ControllerPlayer1,

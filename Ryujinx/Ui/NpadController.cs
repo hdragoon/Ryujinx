@@ -21,7 +21,7 @@ namespace Ryujinx.Ui.Input
 
         private bool IsEnabled()
         {
-            return _inner.Enabled && Joystick.GetState(_inner.Index).IsConnected;
+            return Joystick.GetState(_inner.Index).IsConnected;
         }
 
         public ControllerButtons GetButtons()
@@ -120,8 +120,8 @@ namespace Ryujinx.Ui.Input
             int xAxis = stickXInputId - ControllerInputId.Axis0;
             int yAxis = stickYInputId - ControllerInputId.Axis0;
 
-            float xValue = jsState.GetAxis(xAxis);
-            float yValue = 0 - jsState.GetAxis(yAxis); // Invert Y-axis
+            float xValue =  jsState.GetAxis(xAxis);
+            float yValue = -jsState.GetAxis(yAxis); // Invert Y-axis
 
             return ApplyDeadzone(new Vector2(xValue, yValue));
         }

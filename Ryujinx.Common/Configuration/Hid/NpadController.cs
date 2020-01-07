@@ -3,11 +3,6 @@
     public class NpadController
     {
         /// <summary>
-        /// Enables or disables the controller
-        /// </summary>
-        public bool Enabled;
-
-        /// <summary>
         /// Controller Device Index
         /// </summary>
         public int Index;
