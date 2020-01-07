@@ -1,4 +1,4 @@
-using Ryujinx.Configuration.Hid;
+using Ryujinx.Common.Configuration.Hid;
 using System;
 
 namespace Ryujinx.HLE.HOS.Services.Hid.HidServer

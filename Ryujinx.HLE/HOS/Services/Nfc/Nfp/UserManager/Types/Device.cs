@@ -1,4 +1,4 @@
-﻿using Ryujinx.Configuration.Hid;
+﻿using Ryujinx.Common.Configuration.Hid;
 using Ryujinx.HLE.HOS.Kernel.Threading;
 using Ryujinx.HLE.HOS.Services.Hid;
 

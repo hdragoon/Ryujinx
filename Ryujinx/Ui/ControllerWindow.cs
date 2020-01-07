@@ -1,10 +1,11 @@
-﻿using Gtk;
+using Gtk;
+using OpenTK.Input;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using Ryujinx.Configuration;
-using Ryujinx.Configuration.Hid;
+using Ryujinx.Common.Configuration.Hid;
 using GUI = Gtk.Builder.ObjectAttribute;
 
 namespace Ryujinx.Ui
@@ -47,8 +48,8 @@ namespace Ryujinx.Ui
         [GUI] ToggleButton _zR;
         [GUI] ToggleButton _sL;
         [GUI] ToggleButton _sR;
-        [GUI] ToggleButton _captureButton;
-        [GUI] ToggleButton _homeButton;
+        [GUI] Box          _deadZoneBox;
+        [GUI] Box          _triggerThresholdBox;
         [GUI] Image        _controllerImage;
 #pragma warning restore CS0649
 #pragma warning restore IDE0044
@@ -90,19 +91,61 @@ namespace Ryujinx.Ui
             _zR.Clicked             += (sender, args) => Button_Pressed(sender, args, _zR);
             _sL.Clicked             += (sender, args) => Button_Pressed(sender, args, _sL);
             _sR.Clicked             += (sender, args) => Button_Pressed(sender, args, _sR);
-            _captureButton.Clicked  += (sender, args) => Button_Pressed(sender, args, _captureButton);
-            _homeButton.Clicked     += (sender, args) => Button_Pressed(sender, args, _homeButton);
 
             // Setup current values
-            RefreshInputDevicesButton_Pressed(null, null);
-            InputDevice_Changed(null, null);
+            UpdateInputDeviceList();
+            SetAvailableOptions();
+        }
+
+        private void UpdateInputDeviceList()
+        {
+            _inputDevice.RemoveAll();
+            _inputDevice.Append("Disabled", "Disabled");
+            _inputDevice.Append("Keyboard", "Keyboard");
+
+            for (int i = 0; i != int.MaxValue; i++)
+            {
+                if (!Joystick.GetCapabilities(i).IsConnected)
+                {
+                    break;
+                }
+
+                _inputDevice.Append(i.ToString(), Joystick.GetGuid(i).ToString());
+            }
+
+            _inputDevice.SetActiveId("Disabled"); // replace with current device
+
+            _refreshInputDevicesButton.SetStateFlags(0, true);
+        }
+
+        private void SetAvailableOptions()
+        {
+            if (_inputDevice.ActiveId == "Disabled")
+            {
+                _settingsBox.Hide();
+            }
+            else if (_inputDevice.ActiveId == "Keyboard")
+            {
+                _settingsBox.Show();
+                _deadZoneBox.Hide();
+                _triggerThresholdBox.Hide();
+
+                SetCurrentValues();
+            }
+            else
+            {
+                _settingsBox.Show();
+                _deadZoneBox.Show();
+                _triggerThresholdBox.Show();
+
+                SetCurrentValues();
+            }
+
         }
 
         private void SetCurrentValues()
         {
-            _controllerImage.Pixbuf = new Gdk.Pixbuf(Assembly.GetExecutingAssembly(), "Ryujinx.Ui.assets.JoyCon.png", 500, 500);
             _controllerType.SetActiveId(ConfigurationState.Instance.Hid.KeyboardConfig.Value.ControllerType.ToString());
-            Controller_Changed(null, null);
 
             _lStickUp.Label      = ConfigurationState.Instance.Hid.KeyboardConfig.Value.LeftJoycon.StickUp.ToString();
             _lStickDown.Label    = ConfigurationState.Instance.Hid.KeyboardConfig.Value.LeftJoycon.StickDown.ToString();
@@ -117,7 +160,6 @@ namespace Ryujinx.Ui
             _l.Label             = ConfigurationState.Instance.Hid.KeyboardConfig.Value.LeftJoycon.ButtonL.ToString();
             _zL.Label            = ConfigurationState.Instance.Hid.KeyboardConfig.Value.LeftJoycon.ButtonZl.ToString();
             _sL.Label            = ConfigurationState.Instance.Hid.KeyboardConfig.Value.LeftJoycon.ButtonSl.ToString();
-            _captureButton.Label = ConfigurationState.Instance.Hid.KeyboardConfig.Value.LeftJoycon.ButtonCapture.ToString();
             _rStickUp.Label      = ConfigurationState.Instance.Hid.KeyboardConfig.Value.RightJoycon.StickUp.ToString();
             _rStickDown.Label    = ConfigurationState.Instance.Hid.KeyboardConfig.Value.RightJoycon.StickDown.ToString();
             _rStickLeft.Label    = ConfigurationState.Instance.Hid.KeyboardConfig.Value.RightJoycon.StickLeft.ToString();
@@ -131,24 +173,11 @@ namespace Ryujinx.Ui
             _r.Label             = ConfigurationState.Instance.Hid.KeyboardConfig.Value.RightJoycon.ButtonR.ToString();
             _zR.Label            = ConfigurationState.Instance.Hid.KeyboardConfig.Value.RightJoycon.ButtonZr.ToString();
             _sR.Label            = ConfigurationState.Instance.Hid.KeyboardConfig.Value.RightJoycon.ButtonSr.ToString();
-            _homeButton.Label    = ConfigurationState.Instance.Hid.KeyboardConfig.Value.RightJoycon.ButtonHome.ToString();
+
+            SetControllerImage();
         }
 
-        //Events
-        private void InputDevice_Changed(object sender, EventArgs args)
-        {
-            if (_inputDevice.ActiveId == "Disabled")
-            {
-                _settingsBox.Hide();
-            }
-            else
-            {
-                _settingsBox.Show();
-                SetCurrentValues();
-            }
-        }
-
-        private void Controller_Changed(object sender, EventArgs args)
+        private void SetControllerImage()
         {
             switch (_controllerType.ActiveId)
             {
@@ -167,16 +196,20 @@ namespace Ryujinx.Ui
             }
         }
 
+        //Events
+        private void InputDevice_Changed(object sender, EventArgs args)
+        {
+            SetAvailableOptions();
+        }
+
+        private void Controller_Changed(object sender, EventArgs args)
+        {
+            SetControllerImage();
+        }
+
         private void RefreshInputDevicesButton_Pressed(object sender, EventArgs args)
         {
-            _inputDevice.RemoveAll();
-            _inputDevice.Append("Disabled", "Disabled");
-            _inputDevice.Append("Keyboard", "Keyboard");
-
-            //append found controllers
-
-            _inputDevice.SetActiveId("Keyboard"); //replace with currently used controller
-            _refreshInputDevicesButton.SetStateFlags(0, true);
+            UpdateInputDeviceList();
         }
 
         private void Button_Pressed(object sender, EventArgs args, ToggleButton button)
@@ -234,8 +267,7 @@ namespace Ryujinx.Ui
                 ButtonMinus   = (Configuration.Hid.Key)Enum.Parse(typeof(Configuration.Hid.Key), _minus.Label),
                 ButtonL       = (Configuration.Hid.Key)Enum.Parse(typeof(Configuration.Hid.Key), _l.Label),
                 ButtonZl      = (Configuration.Hid.Key)Enum.Parse(typeof(Configuration.Hid.Key), _zL.Label),
-                ButtonSl      = (Configuration.Hid.Key)Enum.Parse(typeof(Configuration.Hid.Key), _sL.Label),
-                ButtonCapture = (Configuration.Hid.Key)Enum.Parse(typeof(Configuration.Hid.Key), _captureButton.Label),
+                ButtonSl      = (Configuration.Hid.Key)Enum.Parse(typeof(Configuration.Hid.Key), _sL.Label)
             };
 
             ConfigurationState.Instance.Hid.KeyboardConfig.Value.RightJoycon = new NpadKeyboardRight()
@@ -252,8 +284,7 @@ namespace Ryujinx.Ui
                 ButtonPlus  = (Configuration.Hid.Key)Enum.Parse(typeof(Configuration.Hid.Key), _plus.Label),
                 ButtonR     = (Configuration.Hid.Key)Enum.Parse(typeof(Configuration.Hid.Key), _r.Label),
                 ButtonZr    = (Configuration.Hid.Key)Enum.Parse(typeof(Configuration.Hid.Key), _zR.Label),
-                ButtonSr    = (Configuration.Hid.Key)Enum.Parse(typeof(Configuration.Hid.Key), _sR.Label),
-                ButtonHome  = (Configuration.Hid.Key)Enum.Parse(typeof(Configuration.Hid.Key), _homeButton.Label),
+                ButtonSr    = (Configuration.Hid.Key)Enum.Parse(typeof(Configuration.Hid.Key), _sR.Label)
             };
 
             ConfigurationState.Instance.Hid.KeyboardConfig.Value.ControllerType = (ControllerType)Enum.Parse(typeof(ControllerType), _controllerType.ActiveId);

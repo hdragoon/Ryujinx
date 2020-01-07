@@ -2,7 +2,7 @@
 using Ryujinx.HLE.HOS.Ipc;
 using Ryujinx.HLE.HOS.Kernel.Common;
 using Ryujinx.HLE.HOS.Services.Hid.HidServer;
-using Ryujinx.Configuration.Hid;
+using Ryujinx.Common.Configuration.Hid;
 using System;
 
 namespace Ryujinx.HLE.HOS.Services.Hid.Irs

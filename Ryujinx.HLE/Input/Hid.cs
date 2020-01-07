@@ -1,5 +1,5 @@
 ﻿using Ryujinx.Common;
-using Ryujinx.Configuration.Hid;
+using Ryujinx.Common.Configuration.Hid;
 using Ryujinx.HLE.HOS;
 using System;
 using System.Collections.Generic;

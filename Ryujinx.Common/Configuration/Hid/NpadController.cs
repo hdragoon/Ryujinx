@@ -1,11 +1,9 @@
-﻿using Ryujinx.Configuration.Hid;
-
-namespace Ryujinx.Common.Configuration.Hid
+﻿namespace Ryujinx.Common.Configuration.Hid
 {
     public class NpadController
     {
         /// <summary>
-        /// Enables or disables controller support
+        /// Enables or disables the controller
         /// </summary>
         public bool Enabled;
 

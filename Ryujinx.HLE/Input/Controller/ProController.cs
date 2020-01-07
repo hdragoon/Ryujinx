@@ -1,4 +1,4 @@
-﻿using Ryujinx.Configuration.Hid;
+﻿using Ryujinx.Common.Configuration.Hid;
 
 namespace Ryujinx.HLE.Input
 {

@@ -1,13 +1,11 @@
 using OpenTK;
 using OpenTK.Graphics;
 using OpenTK.Input;
-using Ryujinx.Common.Configuration.Hid;
 using Ryujinx.Configuration;
 using Ryujinx.Graphics.OpenGL;
 using Ryujinx.HLE;
 using Ryujinx.HLE.Input;
 using System;
-using System.Linq;
 using System.Threading;
 
 using Stopwatch = System.Diagnostics.Stopwatch;

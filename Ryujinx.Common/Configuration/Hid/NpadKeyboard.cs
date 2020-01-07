@@ -1,30 +1,30 @@
-namespace Ryujinx.UI.Input
+namespace Ryujinx.Common.Configuration.Hid
 {
     public class NpadKeyboard
     {
         /// <summary>
         ///  Controller's Type
         /// </summary>
-        public Configuration.Hid.ControllerType ControllerType;
+        public ControllerType ControllerType;
 
         /// <summary>
         ///  Controller's ID
         /// </summary>
-        public Configuration.Hid.ControllerId ControllerId;
+        public ControllerId ControllerId;
 
         /// <summary>
         /// Left JoyCon Keyboard Bindings
         /// </summary>
-        public Configuration.Hid.NpadKeyboardLeft LeftJoycon;
+        public NpadKeyboardLeft LeftJoycon;
 
         /// <summary>
         /// Right JoyCon Keyboard Bindings
         /// </summary>
-        public Configuration.Hid.NpadKeyboardRight RightJoycon;
+        public NpadKeyboardRight RightJoycon;
 
         /// <summary>
         /// Hotkey Keyboard Bindings
         /// </summary>
-        public Configuration.Hid.KeyboardHotkeys Hotkeys;
+        public KeyboardHotkeys Hotkeys;
     }
 }

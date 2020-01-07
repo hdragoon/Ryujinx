@@ -1,10 +1,9 @@
-﻿using Ryujinx.Common;
+using Ryujinx.Common;
 using Ryujinx.Common.Configuration.Hid;
 using Ryujinx.Common.Logging;
 using Ryujinx.Configuration.Hid;
 using Ryujinx.Configuration.System;
 using Ryujinx.Configuration.Ui;
-using Ryujinx.UI.Input;
 using System;
 using System.Collections.Generic;
 
@@ -379,6 +378,7 @@ namespace Ryujinx.Configuration
                     ButtonMinus = Key.Minus,
                     ButtonL     = Key.E,
                     ButtonZl    = Key.Q,
+                    ButtonSl    = Key.R,
                 },
                 RightJoycon    = new NpadKeyboardRight
                 {
@@ -394,6 +394,7 @@ namespace Ryujinx.Configuration
                     ButtonPlus  = Key.Plus,
                     ButtonR     = Key.U,
                     ButtonZr    = Key.O,
+                    ButtonSr    = Key.Y,
                 },
                 Hotkeys        = new KeyboardHotkeys
                 {
@@ -413,7 +414,8 @@ namespace Ryujinx.Configuration
                     TriggerThreshold = 0.5f,
                     LeftJoycon       = new NpadControllerLeft
                     {
-                        Stick       = ControllerInputId.Axis0,
+                        StickX      = ControllerInputId.Axis0,
+                        StickY      = ControllerInputId.Axis1,
                         StickButton = ControllerInputId.Button8,
                         DPadUp      = ControllerInputId.Hat0Up,
                         DPadDown    = ControllerInputId.Hat0Down,
@@ -425,7 +427,8 @@ namespace Ryujinx.Configuration
                     },
                     RightJoycon      = new NpadControllerRight
                     {
-                        Stick       = ControllerInputId.Axis3,
+                        StickX      = ControllerInputId.Axis3,
+                        StickY      = ControllerInputId.Axis4,
                         StickButton = ControllerInputId.Button9,
                         ButtonA     = ControllerInputId.Button1,
                         ButtonB     = ControllerInputId.Button0,

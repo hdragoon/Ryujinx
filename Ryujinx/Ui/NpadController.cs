@@ -1,4 +1,4 @@
-﻿using OpenTK;
+using OpenTK;
 using OpenTK.Input;
 using Ryujinx.Common.Configuration.Hid;
 using Ryujinx.HLE.Input;
@@ -43,6 +43,7 @@ namespace Ryujinx.Ui.Input
             if (IsActivated(joystickState, _inner.LeftJoycon.ButtonMinus))  buttons |= ControllerButtons.Minus;
             if (IsActivated(joystickState, _inner.LeftJoycon.ButtonL))      buttons |= ControllerButtons.L;
             if (IsActivated(joystickState, _inner.LeftJoycon.ButtonZl))     buttons |= ControllerButtons.Zl;
+            if (IsActivated(joystickState, _inner.LeftJoycon.ButtonSl))     buttons |= ControllerButtons.Sl;
 
             if (IsActivated(joystickState, _inner.RightJoycon.ButtonA))     buttons |= ControllerButtons.A;
             if (IsActivated(joystickState, _inner.RightJoycon.ButtonB))     buttons |= ControllerButtons.B;
@@ -52,6 +53,7 @@ namespace Ryujinx.Ui.Input
             if (IsActivated(joystickState, _inner.RightJoycon.ButtonPlus))  buttons |= ControllerButtons.Plus;
             if (IsActivated(joystickState, _inner.RightJoycon.ButtonR))     buttons |= ControllerButtons.R;
             if (IsActivated(joystickState, _inner.RightJoycon.ButtonZr))    buttons |= ControllerButtons.Zr;
+            if (IsActivated(joystickState, _inner.RightJoycon.ButtonSr))    buttons |= ControllerButtons.Sr;
 
             return buttons;
         }
@@ -92,7 +94,7 @@ namespace Ryujinx.Ui.Input
                 return (0, 0);
             }
 
-            return GetStick(_inner.LeftJoycon.Stick);
+            return GetStick(_inner.LeftJoycon.StickX, _inner.LeftJoycon.StickY);
         }
 
         public (short, short) GetRightStick()
@@ -102,22 +104,24 @@ namespace Ryujinx.Ui.Input
                 return (0, 0);
             }
 
-            return GetStick(_inner.RightJoycon.Stick);
+            return GetStick(_inner.RightJoycon.StickX, _inner.RightJoycon.StickY);
         }
 
-        private (short, short) GetStick(ControllerInputId stickInputId)
+        private (short, short) GetStick(ControllerInputId stickXInputId, ControllerInputId stickYInputId)
         {
-            if (stickInputId < ControllerInputId.Axis0 || stickInputId > ControllerInputId.Axis5)
+            if (stickXInputId < ControllerInputId.Axis0 || stickXInputId > ControllerInputId.Axis5 || 
+                stickYInputId < ControllerInputId.Axis0 || stickYInputId > ControllerInputId.Axis5)
             {
                 return (0, 0);
             }
 
             JoystickState jsState = Joystick.GetState(_inner.Index);
 
-            int xAxis = stickInputId - ControllerInputId.Axis0;
+            int xAxis = stickXInputId - ControllerInputId.Axis0;
+            int yAxis = stickYInputId - ControllerInputId.Axis0;
 
             float xValue = jsState.GetAxis(xAxis);
-            float yValue = 0 - jsState.GetAxis(xAxis + 1); // Invert Y-axis
+            float yValue = 0 - jsState.GetAxis(yAxis); // Invert Y-axis
 
             return ApplyDeadzone(new Vector2(xValue, yValue));
         }

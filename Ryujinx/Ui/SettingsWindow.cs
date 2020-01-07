@@ -1,11 +1,11 @@
 ﻿using Gtk;
 using Ryujinx.Configuration;
 using Ryujinx.Configuration.System;
-using Ryujinx.Configuration.Hid;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
+using Ryujinx.Common.Configuration.Hid;
 
 using GUI = Gtk.Builder.ObjectAttribute;
 

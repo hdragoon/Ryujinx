@@ -1,6 +1,6 @@
-﻿using OpenTK.Input;
+using OpenTK.Input;
+using Ryujinx.Common.Configuration.Hid;
 using Ryujinx.HLE.Input;
-using Ryujinx.UI.Input;
 
 namespace Ryujinx.Ui
 {
@@ -18,6 +18,7 @@ namespace Ryujinx.Ui
             if (keyboard[(Key)npad.LeftJoycon.ButtonMinus]) buttons |= ControllerButtons.Minus;
             if (keyboard[(Key)npad.LeftJoycon.ButtonL])     buttons |= ControllerButtons.L;
             if (keyboard[(Key)npad.LeftJoycon.ButtonZl])    buttons |= ControllerButtons.Zl;
+            if (keyboard[(Key)npad.LeftJoycon.ButtonSl])    buttons |= ControllerButtons.Sl;
             
             if (keyboard[(Key)npad.RightJoycon.StickButton]) buttons |= ControllerButtons.StickRight;
             if (keyboard[(Key)npad.RightJoycon.ButtonA])     buttons |= ControllerButtons.A;
@@ -27,6 +28,7 @@ namespace Ryujinx.Ui
             if (keyboard[(Key)npad.RightJoycon.ButtonPlus])  buttons |= ControllerButtons.Plus;
             if (keyboard[(Key)npad.RightJoycon.ButtonR])     buttons |= ControllerButtons.R;
             if (keyboard[(Key)npad.RightJoycon.ButtonZr])    buttons |= ControllerButtons.Zr;
+            if (keyboard[(Key)npad.RightJoycon.ButtonSr])    buttons |= ControllerButtons.Sr;
 
             return buttons;
         }

@@ -9,7 +9,6 @@ using Utf8Json.Resolvers;
 using Ryujinx.Configuration.System;
 using Ryujinx.Configuration.Hid;
 using Ryujinx.Common.Configuration.Hid;
-using Ryujinx.UI.Input;
 using Ryujinx.Configuration.Ui;
 
 namespace Ryujinx.Configuration
