@@ -173,7 +173,7 @@ namespace Ryujinx.Ui
 
                 if (ConfigurationState.Instance.Hid.EnableKeyboard)
                 {
-                    hidKeyboard = KeyboardControls.GetKeysDown(ConfigurationState.Instance.Hid.KeyboardConfig, keyboard);
+                    hidKeyboard = KeyboardControls.GetKeysDown(keyboard);
                 }
 
                 (leftJoystickDxKeyboard,  leftJoystickDyKeyboard)  = KeyboardControls.GetLeftStick(ConfigurationState.Instance.Hid.KeyboardConfig, keyboard);

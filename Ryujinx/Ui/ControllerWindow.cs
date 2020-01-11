@@ -4,16 +4,19 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Threading;
 using Ryujinx.Configuration;
 using Ryujinx.Common.Configuration.Hid;
+
 using GUI = Gtk.Builder.ObjectAttribute;
+using Key = Ryujinx.Configuration.Hid.Key;
 
 namespace Ryujinx.Ui
 {
     public class ControllerWindow : Window
     {
-        private ControllerId _controllerId;
-        private static bool _listeningForKeypress;
+        private static ControllerId _controllerId;
+        private static ToggleButton _toggleButton;
 
 #pragma warning disable CS0649
 #pragma warning disable IDE0044
@@ -118,9 +121,9 @@ namespace Ryujinx.Ui
             _inputDevice.Append("Disabled", "Disabled");
             _inputDevice.Append("Keyboard", "Keyboard");
 
-            for (int i = 0; Joystick.GetCapabilities(i).IsConnected; i++)
+            for (int i = 0; GamePad.GetCapabilities(i).IsConnected; i++)
             {
-                _inputDevice.Append(i.ToString(), Joystick.GetGuid(i).ToString());
+                _inputDevice.Append(i.ToString(), GamePad.GetName(i));
             }
 
             _inputDevice.SetActiveId(currentInputDevice);
@@ -152,7 +155,6 @@ namespace Ryujinx.Ui
 
                 SetCurrentValues();
             }
-
         }
 
         private void SetCurrentValues()
@@ -284,6 +286,67 @@ namespace Ryujinx.Ui
             _controllerTriggerThreshold.Value = 0;
         }
 
+        private static bool IsAnyKeyPressed(out Key pressedKey, int index = 0)
+        {
+            KeyboardState keyboardState = Keyboard.GetState(index);
+
+            foreach (Key key in Enum.GetValues(typeof(Key)))
+            {
+                if (keyboardState.IsKeyDown((OpenTK.Input.Key)key))
+                {
+                    pressedKey = key;
+                    return true;
+                }
+            }
+
+            pressedKey = default;
+            return false;
+        }
+
+        private static bool IsAnyButtonPressed(int index, double triggerThreshold, out ControllerInputId pressedButton)
+        {
+            JoystickState joystickState = Joystick.GetState(index);
+
+            //Buttons
+            for (int i = 0; i != Joystick.GetCapabilities(index).ButtonCount; i++)
+            {
+                if (joystickState.IsButtonDown(i))
+                {
+                    Enum.TryParse($"Button{i}", out pressedButton);
+                    return true;
+                }
+            }
+
+            //Axis
+            for (int i = 0; i != Joystick.GetCapabilities(index).AxisCount; i++)
+            {
+                if (joystickState.GetAxis(i) > triggerThreshold)
+                {
+                    Enum.TryParse($"Axis{i}", out pressedButton);
+                    return true;
+                }
+            }
+
+            //Hats
+            for (int i = 0; i != Joystick.GetCapabilities(index).HatCount; i++)
+            {
+                JoystickHatState hatState = joystickState.GetHat((JoystickHat)i);
+                string pos = null;
+
+                if (hatState.IsUp)    pos = "Up";
+                if (hatState.IsDown)  pos = "Down";
+                if (hatState.IsLeft)  pos = "Left";
+                if (hatState.IsRight) pos = "Right";
+                if (pos == null)      continue;
+
+                Enum.TryParse($"Hat{i}{pos}", out pressedButton);
+                return true;
+            }
+
+            pressedButton = ControllerInputId.Button0;
+            return false;
+        }
+
         //Events
         private void InputDevice_Changed(object sender, EventArgs args)
         {
@@ -304,43 +367,52 @@ namespace Ryujinx.Ui
 
         private void Button_Pressed(object sender, EventArgs args)
         {
-            ToggleButton button = (ToggleButton)sender;
+            _toggleButton = (ToggleButton)sender;
 
-            if (_listeningForKeypress == false)
+            if (_inputDevice.ActiveId == "Keyboard")
             {
                 KeyPressEvent += OnKeyPress;
 
-                _listeningForKeypress = true;
+                /*Key pressedKey;
 
-                void OnKeyPress(object o, KeyPressEventArgs keyPressed)
-                {
-                    string key    = keyPressed.Event.Key.ToString();
-                    string capKey = key.First().ToString().ToUpper() + key.Substring(1);
+                while (!IsAnyKeyPressed(out pressedKey)) { }
 
-                    if (Enum.IsDefined(typeof(Configuration.Hid.Key), capKey))
-                    {
-                        button.Label = capKey;
-                    }
-                    else if (GdkToOpenTkInput.ContainsKey(key))
-                    {
-                        button.Label = GdkToOpenTkInput[key];
-                    }
-                    else
-                    {
-                        button.Label = "Space";
-                    }
-
-                    button.SetStateFlags(0, true);
-
-                    KeyPressEvent -= OnKeyPress;
-
-                    _listeningForKeypress = false;
-                }
+                _toggleButton.Label = pressedKey.ToString();
+                _toggleButton.SetStateFlags(0, true);*/
             }
             else
             {
-                button.SetStateFlags(0, true);
+                ControllerInputId pressedButton;
+
+                while (!IsAnyButtonPressed(int.Parse(_inputDevice.ActiveId), _controllerTriggerThreshold.Value, out pressedButton)) { }
+
+                _toggleButton.Label = pressedButton.ToString();
+                _toggleButton.SetStateFlags(0, true);
             }
+        }
+
+        [GLib.ConnectBefore]
+        private void OnKeyPress(object sender, KeyPressEventArgs args)
+        {
+            string key    = args.Event.Key.ToString();
+            string capKey = key.First().ToString().ToUpper() + key.Substring(1);
+
+            if (Enum.IsDefined(typeof(Key), capKey))
+            {
+                _toggleButton.Label = capKey;
+            }
+            else if (GtkToOpenTkInput.ContainsKey(key))
+            {
+                _toggleButton.Label = GtkToOpenTkInput[key];
+            }
+            else
+            {
+                _toggleButton.Label = "Unknown";
+            }
+
+            _toggleButton.SetStateFlags(0, true);
+
+            KeyPressEvent -= OnKeyPress;
         }
 
         private void SaveToggle_Activated(object sender, EventArgs args)
@@ -351,39 +423,39 @@ namespace Ryujinx.Ui
             {
                 ConfigurationState.Instance.Hid.KeyboardConfig.Value.LeftJoycon = new NpadKeyboardLeft
                 {
-                    StickUp       = (Configuration.Hid.Key)Enum.Parse(typeof(Configuration.Hid.Key), _lStickUp.Label),
-                    StickDown     = (Configuration.Hid.Key)Enum.Parse(typeof(Configuration.Hid.Key), _lStickDown.Label),
-                    StickLeft     = (Configuration.Hid.Key)Enum.Parse(typeof(Configuration.Hid.Key), _lStickLeft.Label),
-                    StickRight    = (Configuration.Hid.Key)Enum.Parse(typeof(Configuration.Hid.Key), _lStickRight.Label),
-                    StickButton   = (Configuration.Hid.Key)Enum.Parse(typeof(Configuration.Hid.Key), _lStickButton.Label),
-                    DPadUp        = (Configuration.Hid.Key)Enum.Parse(typeof(Configuration.Hid.Key), _dpadUp.Label),
-                    DPadDown      = (Configuration.Hid.Key)Enum.Parse(typeof(Configuration.Hid.Key), _dpadDown.Label),
-                    DPadLeft      = (Configuration.Hid.Key)Enum.Parse(typeof(Configuration.Hid.Key), _dpadLeft.Label),
-                    DPadRight     = (Configuration.Hid.Key)Enum.Parse(typeof(Configuration.Hid.Key), _dpadRight.Label),
-                    ButtonMinus   = (Configuration.Hid.Key)Enum.Parse(typeof(Configuration.Hid.Key), _minus.Label),
-                    ButtonL       = (Configuration.Hid.Key)Enum.Parse(typeof(Configuration.Hid.Key), _l.Label),
-                    ButtonZl      = (Configuration.Hid.Key)Enum.Parse(typeof(Configuration.Hid.Key), _zL.Label),
-                    ButtonSl      = (Configuration.Hid.Key)Enum.Parse(typeof(Configuration.Hid.Key), _sL.Label)
+                    StickUp     = Enum.Parse<Key>(_lStickUp.Label),
+                    StickDown   = Enum.Parse<Key>(_lStickDown.Label),
+                    StickLeft   = Enum.Parse<Key>(_lStickLeft.Label),
+                    StickRight  = Enum.Parse<Key>(_lStickRight.Label),
+                    StickButton = Enum.Parse<Key>(_lStickButton.Label),
+                    DPadUp      = Enum.Parse<Key>(_dpadUp.Label),
+                    DPadDown    = Enum.Parse<Key>(_dpadDown.Label),
+                    DPadLeft    = Enum.Parse<Key>(_dpadLeft.Label),
+                    DPadRight   = Enum.Parse<Key>(_dpadRight.Label),
+                    ButtonMinus = Enum.Parse<Key>(_minus.Label),
+                    ButtonL     = Enum.Parse<Key>(_l.Label),
+                    ButtonZl    = Enum.Parse<Key>(_zL.Label),
+                    ButtonSl    = Enum.Parse<Key>(_sL.Label)
                 };
 
                 ConfigurationState.Instance.Hid.KeyboardConfig.Value.RightJoycon = new NpadKeyboardRight
                 {
-                    StickUp     = (Configuration.Hid.Key)Enum.Parse(typeof(Configuration.Hid.Key), _rStickUp.Label),
-                    StickDown   = (Configuration.Hid.Key)Enum.Parse(typeof(Configuration.Hid.Key), _rStickDown.Label),
-                    StickLeft   = (Configuration.Hid.Key)Enum.Parse(typeof(Configuration.Hid.Key), _rStickLeft.Label),
-                    StickRight  = (Configuration.Hid.Key)Enum.Parse(typeof(Configuration.Hid.Key), _rStickRight.Label),
-                    StickButton = (Configuration.Hid.Key)Enum.Parse(typeof(Configuration.Hid.Key), _rStickButton.Label),
-                    ButtonA     = (Configuration.Hid.Key)Enum.Parse(typeof(Configuration.Hid.Key), _a.Label),
-                    ButtonB     = (Configuration.Hid.Key)Enum.Parse(typeof(Configuration.Hid.Key), _b.Label),
-                    ButtonX     = (Configuration.Hid.Key)Enum.Parse(typeof(Configuration.Hid.Key), _x.Label),
-                    ButtonY     = (Configuration.Hid.Key)Enum.Parse(typeof(Configuration.Hid.Key), _y.Label),
-                    ButtonPlus  = (Configuration.Hid.Key)Enum.Parse(typeof(Configuration.Hid.Key), _plus.Label),
-                    ButtonR     = (Configuration.Hid.Key)Enum.Parse(typeof(Configuration.Hid.Key), _r.Label),
-                    ButtonZr    = (Configuration.Hid.Key)Enum.Parse(typeof(Configuration.Hid.Key), _zR.Label),
-                    ButtonSr    = (Configuration.Hid.Key)Enum.Parse(typeof(Configuration.Hid.Key), _sR.Label)
+                    StickUp     = Enum.Parse<Key>(_rStickUp.Label),
+                    StickDown   = Enum.Parse<Key>(_rStickDown.Label),
+                    StickLeft   = Enum.Parse<Key>(_rStickLeft.Label),
+                    StickRight  = Enum.Parse<Key>(_rStickRight.Label),
+                    StickButton = Enum.Parse<Key>(_rStickButton.Label),
+                    ButtonA     = Enum.Parse<Key>(_a.Label),
+                    ButtonB     = Enum.Parse<Key>(_b.Label),
+                    ButtonX     = Enum.Parse<Key>(_x.Label),
+                    ButtonY     = Enum.Parse<Key>(_y.Label),
+                    ButtonPlus  = Enum.Parse<Key>(_plus.Label),
+                    ButtonR     = Enum.Parse<Key>(_r.Label),
+                    ButtonZr    = Enum.Parse<Key>(_zR.Label),
+                    ButtonSr    = Enum.Parse<Key>(_sR.Label)
                 };
 
-                ConfigurationState.Instance.Hid.KeyboardConfig.Value.ControllerType = (ControllerType)Enum.Parse(typeof(ControllerType), _controllerType.ActiveId);
+                ConfigurationState.Instance.Hid.KeyboardConfig.Value.ControllerType = Enum.Parse<ControllerType>(_controllerType.ActiveId);
                 ConfigurationState.Instance.Hid.KeyboardConfig.Value.ControllerId   = _controllerId;
             }
             else if (_inputDevice.ActiveId == "Disabled")
@@ -404,38 +476,38 @@ namespace Ryujinx.Ui
 
                 controllerConfig.LeftJoycon = new NpadControllerLeft
                 {
-                    StickX        = (ControllerInputId)Enum.Parse(typeof(ControllerInputId), _lStickX.Label),
-                    StickY        = (ControllerInputId)Enum.Parse(typeof(ControllerInputId), _lStickY.Label),
-                    StickButton   = (ControllerInputId)Enum.Parse(typeof(ControllerInputId), _lStickButton.Label),
-                    DPadUp        = (ControllerInputId)Enum.Parse(typeof(ControllerInputId), _dpadUp.Label),
-                    DPadDown      = (ControllerInputId)Enum.Parse(typeof(ControllerInputId), _dpadDown.Label),
-                    DPadLeft      = (ControllerInputId)Enum.Parse(typeof(ControllerInputId), _dpadLeft.Label),
-                    DPadRight     = (ControllerInputId)Enum.Parse(typeof(ControllerInputId), _dpadRight.Label),
-                    ButtonMinus   = (ControllerInputId)Enum.Parse(typeof(ControllerInputId), _minus.Label),
-                    ButtonL       = (ControllerInputId)Enum.Parse(typeof(ControllerInputId), _l.Label),
-                    ButtonZl      = (ControllerInputId)Enum.Parse(typeof(ControllerInputId), _zL.Label),
-                    ButtonSl      = (ControllerInputId)Enum.Parse(typeof(ControllerInputId), _sL.Label)
+                    StickX      = Enum.Parse<ControllerInputId>(_lStickX.Label),
+                    StickY      = Enum.Parse<ControllerInputId>(_lStickY.Label),
+                    StickButton = Enum.Parse<ControllerInputId>(_lStickButton.Label),
+                    DPadUp      = Enum.Parse<ControllerInputId>(_dpadUp.Label),
+                    DPadDown    = Enum.Parse<ControllerInputId>(_dpadDown.Label),
+                    DPadLeft    = Enum.Parse<ControllerInputId>(_dpadLeft.Label),
+                    DPadRight   = Enum.Parse<ControllerInputId>(_dpadRight.Label),
+                    ButtonMinus = Enum.Parse<ControllerInputId>(_minus.Label),
+                    ButtonL     = Enum.Parse<ControllerInputId>(_l.Label),
+                    ButtonZl    = Enum.Parse<ControllerInputId>(_zL.Label),
+                    ButtonSl    = Enum.Parse<ControllerInputId>(_sL.Label)
                 };
 
                 controllerConfig.RightJoycon = new NpadControllerRight
                 {
-                    StickX      = (ControllerInputId)Enum.Parse(typeof(ControllerInputId), _rStickX.Label),
-                    StickY      = (ControllerInputId)Enum.Parse(typeof(ControllerInputId), _rStickY.Label),
-                    StickButton = (ControllerInputId)Enum.Parse(typeof(ControllerInputId), _rStickButton.Label),
-                    ButtonA     = (ControllerInputId)Enum.Parse(typeof(ControllerInputId), _a.Label),
-                    ButtonB     = (ControllerInputId)Enum.Parse(typeof(ControllerInputId), _b.Label),
-                    ButtonX     = (ControllerInputId)Enum.Parse(typeof(ControllerInputId), _x.Label),
-                    ButtonY     = (ControllerInputId)Enum.Parse(typeof(ControllerInputId), _y.Label),
-                    ButtonPlus  = (ControllerInputId)Enum.Parse(typeof(ControllerInputId), _plus.Label),
-                    ButtonR     = (ControllerInputId)Enum.Parse(typeof(ControllerInputId), _r.Label),
-                    ButtonZr    = (ControllerInputId)Enum.Parse(typeof(ControllerInputId), _zR.Label),
-                    ButtonSr    = (ControllerInputId)Enum.Parse(typeof(ControllerInputId), _sR.Label)
+                    StickX      = Enum.Parse<ControllerInputId>(_rStickX.Label),
+                    StickY      = Enum.Parse<ControllerInputId>(_rStickY.Label),
+                    StickButton = Enum.Parse<ControllerInputId>(_rStickButton.Label),
+                    ButtonA     = Enum.Parse<ControllerInputId>(_a.Label),
+                    ButtonB     = Enum.Parse<ControllerInputId>(_b.Label),
+                    ButtonX     = Enum.Parse<ControllerInputId>(_x.Label),
+                    ButtonY     = Enum.Parse<ControllerInputId>(_y.Label),
+                    ButtonPlus  = Enum.Parse<ControllerInputId>(_plus.Label),
+                    ButtonR     = Enum.Parse<ControllerInputId>(_r.Label),
+                    ButtonZr    = Enum.Parse<ControllerInputId>(_zR.Label),
+                    ButtonSr    = Enum.Parse<ControllerInputId>(_sR.Label)
                 };
 
                 controllerConfig.Index            = int.Parse(_inputDevice.ActiveId);
                 controllerConfig.Deadzone         = (float)_controllerDeadzone.Value;
                 controllerConfig.TriggerThreshold = (float)_controllerTriggerThreshold.Value;
-                controllerConfig.ControllerType   = (ControllerType)Enum.Parse(typeof(ControllerType), _controllerType.ActiveId);
+                controllerConfig.ControllerType   = Enum.Parse<ControllerType>(_controllerType.ActiveId);
                 controllerConfig.ControllerId     = _controllerId;
             }
 
@@ -447,41 +519,12 @@ namespace Ryujinx.Ui
             Dispose();
         }
 
-        public readonly Dictionary<string, string> GdkToOpenTkInput = new Dictionary<string, string>()
+        public readonly Dictionary<string, string> GtkToOpenTkInput = new Dictionary<string, string>()
         {
-            { "Key_0",       "Number0"        },
-            { "Key_1",       "Number1"        },
-            { "Key_2",       "Number2"        },
-            { "Key_3",       "Number3"        },
-            { "Key_4",       "Number4"        },
-            { "Key_5",       "Number5"        },
-            { "Key_6",       "Number6"        },
-            { "Key_7",       "Number7"        },
-            { "Key_8",       "Number8"        },
-            { "Key_9",       "Number9"        },
-            { "equal",       "Plus"           },
-            { "uparrow",     "Up"             },
-            { "downarrow",   "Down"           },
-            { "leftarrow",   "Left"           },
-            { "rightarrow",  "Right"          },
-            { "Control_L",   "ControlLeft"    },
-            { "Control_R",   "ControlRight"   },
-            { "Shift_L",     "ShiftLeft"      },
-            { "Shift_R",     "ShiftRight"     },
             { "Alt_L",       "AltLeft"        },
             { "Alt_R",       "AltRight"       },
-            { "Page_Up",     "PageUp"         },
-            { "Page_Down",   "PageDown"       },
-            { "KP_Enter",    "KeypadEnter"    },
-            { "KP_Up",       "Up"             },
-            { "KP_Down",     "Down"           },
-            { "KP_Left",     "Left"           },
-            { "KP_Right",    "Right"          },
-            { "KP_Divide",   "KeypadDivide"   },
-            { "KP_Multiply", "KeypadMultiply" },
-            { "KP_Subtract", "KeypadSubtract" },
-            { "KP_Add",      "KeypadAdd"      },
-            { "KP_Decimal",  "KeypadDecimal"  },
+            { "Control_L",   "ControlLeft"    },
+            { "Control_R",   "ControlRight"   },
             { "KP_0",        "Keypad0"        },
             { "KP_1",        "Keypad1"        },
             { "KP_2",        "Keypad2"        },
@@ -492,6 +535,46 @@ namespace Ryujinx.Ui
             { "KP_7",        "Keypad7"        },
             { "KP_8",        "Keypad8"        },
             { "KP_9",        "Keypad9"        },
+            { "KP_Add",      "KeypadAdd"      },
+            { "KP_Decimal",  "KeypadDecimal"  },
+            { "KP_Divide",   "KeypadDivide"   },
+            { "KP_Down",     "Down"           },
+            { "KP_Enter",    "KeypadEnter"    },
+            { "KP_Left",     "Left"           },
+            { "KP_Multiply", "KeypadMultiply" },
+            { "KP_Right",    "Right"          },
+            { "KP_Subtract", "KeypadSubtract" },
+            { "KP_Up",       "Up"             },
+            { "Key_0",       "Number0"        },
+            { "Key_1",       "Number1"        },
+            { "Key_2",       "Number2"        },
+            { "Key_3",       "Number3"        },
+            { "Key_4",       "Number4"        },
+            { "Key_5",       "Number5"        },
+            { "Key_6",       "Number6"        },
+            { "Key_7",       "Number7"        },
+            { "Key_8",       "Number8"        },
+            { "Key_9",       "Number9"        },
+            { "Meta_L",      "WinLeft"        },
+            { "Meta_R",      "WinRight"       },
+            { "Next",        "PageDown"       },
+            { "Num_Lock",    "NumLock"        },
+            { "Page_Down",   "PageDown"       },
+            { "Page_Up",     "PageUp"         },
+            { "Prior",       "PageUp"         },
+            { "Return",      "Enter"          },
+            { "Shift_L",     "ShiftLeft"      },
+            { "Shift_R",     "ShiftRight"     },
+            { "VoidSymbol",  "CapsLock"       },
+            { "backslash",   "BackSlash"      },
+            { "bracketleft", "BracketLeft"    },
+            { "bracketright","BracketRight"   },
+            { "downarrow",   "Down"           },
+            { "equal",       "Plus"           },
+            { "leftarrow",   "Left"           },
+            { "quoteleft",   "Grave"          },
+            { "rightarrow",  "Right"          },
+            { "uparrow",     "Up"             }
         };
     }
 }

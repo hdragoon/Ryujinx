@@ -218,7 +218,7 @@ namespace Ryujinx.Ui
             new KeyMappingEntry { TargetKey = Key.NumLock,      Target = 10 },
         };
 
-        public static HLE.Input.Keyboard GetKeysDown(NpadKeyboard npad, KeyboardState keyboard)
+        public static HLE.Input.Keyboard GetKeysDown(KeyboardState keyboard)
         {
             HLE.Input.Keyboard hidKeyboard = new HLE.Input.Keyboard
             {
