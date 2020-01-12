@@ -34,49 +34,53 @@
     "enable_custom_theme": false,
     "custom_theme_path": "",
     "enable_keyboard": false,
-    "keyboard_config": {
-    "controller_type": "Handheld",
-        "controller_id": "ControllerHandheld",
-        "left_joycon": {
-            "stick_up": "W",
-            "stick_down": "S",
-            "stick_left": "A",
-            "stick_right": "D",
-            "stick_button": "F",
-            "dpad_up": "Up",
-            "dpad_down": "Down",
-            "dpad_left": "Left",
-            "dpad_right": "Right",
-            "button_minus": "Minus",
-            "button_l": "E",
-            "button_zl": "Q",
-            "button_sl": "R"
-        },
-        "right_joycon": {
-            "stick_up": "I",
-            "stick_down": "K",
-            "stick_left": "J",
-            "stick_right": "L",
-            "stick_button": "H",
-            "button_a": "Z",
-            "button_b": "X",
-            "button_x": "C",
-            "button_y": "V",
-            "button_plus": "Plus",
-            "button_r": "U",
-            "button_zr": "O",
-            "button_sr": "Y"
-        },
-        "hotkeys": {
-            "toggle_vsync": "Tab"
+    "keyboard_config": [
+        {
+            "index": 0,
+            "controller_type": "Handheld",
+            "controller_id": "ControllerHandheld",
+            "left_joycon": {
+                "stick_up": "W",
+                "stick_down": "S",
+                "stick_left": "A",
+                 "stick_right": "D",
+                "stick_button": "F",
+                "dpad_up": "Up",
+                "dpad_down": "Down",
+                "dpad_left": "Left",
+                "dpad_right": "Right",
+                "button_minus": "Minus",
+                "button_l": "E",
+                "button_zl": "Q",
+                "button_sl": "R"
+            },
+            "right_joycon": {
+                "stick_up": "I",
+                "stick_down": "K",
+                "stick_left": "J",
+                "stick_right": "L",
+                "stick_button": "H",
+                "button_a": "Z",
+                "button_b": "X",
+                "button_x": "C",
+                "button_y": "V",
+                "button_plus": "Plus",
+                "button_r": "U",
+                "button_zr": "O",
+                "button_sr": "Y"
+            },
+            "hotkeys": {
+                "toggle_vsync": "Tab"
+            }
         }
-    },
+    ],
     "joystick_config": [
         {
             "index": 0,
             "controller_type": "ProController",
             "controller_id": "ControllerPlayer1",
-            "deadzone": 0.05,
+            "deadzone_left": 0.05,
+            "deadzone_right": 0.05,
             "trigger_threshold": 0.5,
             "left_joycon": {
                 "stick_x": "Axis0",

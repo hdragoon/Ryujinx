@@ -94,7 +94,7 @@ namespace Ryujinx.Ui.Input
                 return (0, 0);
             }
 
-            return GetStick(_inner.LeftJoycon.StickX, _inner.LeftJoycon.StickY);
+            return GetStick(_inner.LeftJoycon.StickX, _inner.LeftJoycon.StickY, _inner.DeadzoneLeft);
         }
 
         public (short, short) GetRightStick()
@@ -104,10 +104,10 @@ namespace Ryujinx.Ui.Input
                 return (0, 0);
             }
 
-            return GetStick(_inner.RightJoycon.StickX, _inner.RightJoycon.StickY);
+            return GetStick(_inner.RightJoycon.StickX, _inner.RightJoycon.StickY, _inner.DeadzoneRight);
         }
 
-        private (short, short) GetStick(ControllerInputId stickXInputId, ControllerInputId stickYInputId)
+        private (short, short) GetStick(ControllerInputId stickXInputId, ControllerInputId stickYInputId, float deadzone)
         {
             if (stickXInputId < ControllerInputId.Axis0 || stickXInputId > ControllerInputId.Axis5 || 
                 stickYInputId < ControllerInputId.Axis0 || stickYInputId > ControllerInputId.Axis5)
@@ -123,13 +123,13 @@ namespace Ryujinx.Ui.Input
             float xValue =  jsState.GetAxis(xAxis);
             float yValue = -jsState.GetAxis(yAxis); // Invert Y-axis
 
-            return ApplyDeadzone(new Vector2(xValue, yValue));
+            return ApplyDeadzone(new Vector2(xValue, yValue), deadzone);
         }
 
-        private (short, short) ApplyDeadzone(Vector2 axis)
+        private (short, short) ApplyDeadzone(Vector2 axis, float deadzone)
         {
-            return (ClampAxis(MathF.Abs(axis.X) > _inner.Deadzone ? axis.X : 0f),
-                    ClampAxis(MathF.Abs(axis.Y) > _inner.Deadzone ? axis.Y : 0f));
+            return (ClampAxis(MathF.Abs(axis.X) > deadzone ? axis.X : 0f),
+                    ClampAxis(MathF.Abs(axis.Y) > deadzone ? axis.Y : 0f));
         }
 
         private static short ClampAxis(float value)

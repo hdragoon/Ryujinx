@@ -196,7 +196,7 @@ namespace Ryujinx.Configuration
             /// <summary>
             /// Keyboard control bindings
             /// </summary>
-            public ReactiveObject<NpadKeyboard> KeyboardConfig { get; private set; }
+            public ReactiveObject<List<NpadKeyboard>> KeyboardConfig { get; private set; }
 
             /// <summary>
             /// Controller control bindings
@@ -206,7 +206,7 @@ namespace Ryujinx.Configuration
             public HidSection()
             {
                 EnableKeyboard = new ReactiveObject<bool>();
-                KeyboardConfig = new ReactiveObject<NpadKeyboard>();
+                KeyboardConfig = new ReactiveObject<List<NpadKeyboard>>();
                 JoystickConfig = new ReactiveObject<List<NpadController>>();
             }
         }
@@ -360,45 +360,49 @@ namespace Ryujinx.Configuration
             Ui.CustomThemePath.Value               = "";
             Hid.EnableKeyboard.Value               = false;
 
-            Hid.KeyboardConfig.Value = new NpadKeyboard
+            Hid.KeyboardConfig.Value = new List<NpadKeyboard>
             {
-                ControllerType = ControllerType.Handheld,
-                ControllerId   = ControllerId.ControllerHandheld,
-                LeftJoycon     = new NpadKeyboardLeft
+                new NpadKeyboard
                 {
-                    StickUp     = Key.W,
-                    StickDown   = Key.S,
-                    StickLeft   = Key.A,
-                    StickRight  = Key.D,
-                    StickButton = Key.F,
-                    DPadUp      = Key.Up,
-                    DPadDown    = Key.Down,
-                    DPadLeft    = Key.Left,
-                    DPadRight   = Key.Right,
-                    ButtonMinus = Key.Minus,
-                    ButtonL     = Key.E,
-                    ButtonZl    = Key.Q,
-                    ButtonSl    = Key.R,
-                },
-                RightJoycon    = new NpadKeyboardRight
-                {
-                    StickUp     = Key.I,
-                    StickDown   = Key.K,
-                    StickLeft   = Key.J,
-                    StickRight  = Key.L,
-                    StickButton = Key.H,
-                    ButtonA     = Key.Z,
-                    ButtonB     = Key.X,
-                    ButtonX     = Key.C,
-                    ButtonY     = Key.V,
-                    ButtonPlus  = Key.Plus,
-                    ButtonR     = Key.U,
-                    ButtonZr    = Key.O,
-                    ButtonSr    = Key.Y,
-                },
-                Hotkeys        = new KeyboardHotkeys
-                {
-                    ToggleVsync = Key.Tab
+                    Index          = 0,
+                    ControllerType = ControllerType.Handheld,
+                    ControllerId   = ControllerId.ControllerHandheld,
+                    LeftJoycon     = new NpadKeyboardLeft
+                    {
+                        StickUp     = Key.W,
+                        StickDown   = Key.S,
+                        StickLeft   = Key.A,
+                        StickRight  = Key.D,
+                        StickButton = Key.F,
+                        DPadUp      = Key.Up,
+                        DPadDown    = Key.Down,
+                        DPadLeft    = Key.Left,
+                        DPadRight   = Key.Right,
+                        ButtonMinus = Key.Minus,
+                        ButtonL     = Key.E,
+                        ButtonZl    = Key.Q,
+                        ButtonSl    = Key.R,
+                    },
+                    RightJoycon    = new NpadKeyboardRight
+                    {
+                        StickUp     = Key.I,
+                        StickDown   = Key.K,
+                        StickLeft   = Key.J,
+                        StickRight  = Key.L,
+                        StickButton = Key.H,
+                        ButtonA     = Key.Z,
+                        ButtonB     = Key.X,
+                        ButtonX     = Key.C,
+                        ButtonY     = Key.V,
+                        ButtonPlus  = Key.Plus,
+                        ButtonR     = Key.U,
+                        ButtonZr    = Key.O,
+                        ButtonSr    = Key.Y,
+                    },
+                    Hotkeys        = new KeyboardHotkeys
+                    {
+                        ToggleVsync = Key.Tab
+                    }
                 }
             };
 
@@ -409,7 +413,8 @@ namespace Ryujinx.Configuration
                     Index            = 0,
                     ControllerType   = ControllerType.ProController,
                     ControllerId     = ControllerId.ControllerPlayer1,
-                    Deadzone         = 0.05f,
+                    DeadzoneLeft     = 0.05f,
+                    DeadzoneRight    = 0.05f,
                     TriggerThreshold = 0.5f,
                     LeftJoycon       = new NpadControllerLeft
                     {

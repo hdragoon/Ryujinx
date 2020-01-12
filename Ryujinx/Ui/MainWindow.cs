@@ -384,8 +384,11 @@ namespace Ryujinx.Ui
             {
                 device.Hid.InitializeController(controller.ControllerId, controller.ControllerType);
             }
-            
-            device.Hid.InitializeKeyboard(ConfigurationState.Instance.Hid.KeyboardConfig.Value.ControllerId, ConfigurationState.Instance.Hid.KeyboardConfig.Value.ControllerType);
+
+            foreach (NpadKeyboard keyboard in ConfigurationState.Instance.Hid.KeyboardConfig.Value)
+            {
+                device.Hid.InitializeController(keyboard.ControllerId, keyboard.ControllerType, true);
+            }
 
             using (_screen = new GlScreen(device))
             {

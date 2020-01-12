@@ -46,8 +46,15 @@ namespace Ryujinx.Ui
         [GUI] ToggleButton _removeDir;
         [GUI] Entry        _logPath;
         [GUI] Entry        _graphicsShadersDumpPath;
-        [GUI] ComboBoxText _controllerId;
-        [GUI] ToggleButton _configureControllerButton;
+        [GUI] ToggleButton _configureController1;
+        [GUI] ToggleButton _configureController2;
+        [GUI] ToggleButton _configureController3;
+        [GUI] ToggleButton _configureController4;
+        [GUI] ToggleButton _configureController5;
+        [GUI] ToggleButton _configureController6;
+        [GUI] ToggleButton _configureController7;
+        [GUI] ToggleButton _configureController8;
+        [GUI] ToggleButton _configureControllerH;
 #pragma warning restore CS0649
 #pragma warning restore IDE0044
 
@@ -58,7 +65,18 @@ namespace Ryujinx.Ui
             builder.Autoconnect(this);
 
             _settingsWin.Icon = new Gdk.Pixbuf(Assembly.GetExecutingAssembly(), "Ryujinx.Ui.assets.Icon.png");
-            
+
+            //Bind Events
+            _configureController1.Pressed += (sender, args) => ConfigureController_Pressed(sender, args, ControllerId.ControllerPlayer1);
+            _configureController2.Pressed += (sender, args) => ConfigureController_Pressed(sender, args, ControllerId.ControllerPlayer2);
+            _configureController3.Pressed += (sender, args) => ConfigureController_Pressed(sender, args, ControllerId.ControllerPlayer3);
+            _configureController4.Pressed += (sender, args) => ConfigureController_Pressed(sender, args, ControllerId.ControllerPlayer4);
+            _configureController5.Pressed += (sender, args) => ConfigureController_Pressed(sender, args, ControllerId.ControllerPlayer5);
+            _configureController6.Pressed += (sender, args) => ConfigureController_Pressed(sender, args, ControllerId.ControllerPlayer6);
+            _configureController7.Pressed += (sender, args) => ConfigureController_Pressed(sender, args, ControllerId.ControllerPlayer7);
+            _configureController8.Pressed += (sender, args) => ConfigureController_Pressed(sender, args, ControllerId.ControllerPlayer8);
+            _configureControllerH.Pressed += (sender, args) => ConfigureController_Pressed(sender, args, ControllerId.ControllerHandheld);
+
             //Setup Currents
             if (ConfigurationState.Instance.Logger.EnableFileLog)
             {
@@ -193,8 +211,10 @@ namespace Ryujinx.Ui
         {
             TreeSelection selection = _gameDirsBox.Selection;
 
-            selection.GetSelected(out TreeIter treeIter);
-            _gameDirsBoxStore.Remove(ref treeIter);
+            if (selection.GetSelected(out TreeIter treeIter))
+            {
+                _gameDirsBoxStore.Remove(ref treeIter);
+            }
 
             _removeDir.SetStateFlags(0, true);
         }
@@ -223,10 +243,9 @@ namespace Ryujinx.Ui
             _browseThemePath.SetStateFlags(0, true);
         }
 
-        private void ConfigureController_Pressed(object sender, EventArgs args)
+        private void ConfigureController_Pressed(object sender, EventArgs args, ControllerId controllerId)
         {
-            _configureControllerButton.SetStateFlags(0, true);
-            ControllerId controllerId = (ControllerId)Enum.Parse(typeof(ControllerId), _controllerId.ActiveId);
+            ((ToggleButton)sender).SetStateFlags(0, true);
 
             ControllerWindow controllerWin = new ControllerWindow(controllerId);
             controllerWin.Show();
@@ -262,7 +281,7 @@ namespace Ryujinx.Ui
             ConfigurationState.Instance.System.IgnoreMissingServices.Value     = _ignoreToggle.Active;
             ConfigurationState.Instance.Hid.EnableKeyboard.Value               = _directKeyboardAccess.Active;
             ConfigurationState.Instance.Ui.EnableCustomTheme.Value             = _custThemeToggle.Active;
-            ConfigurationState.Instance.System.Language.Value                  = (Language)Enum.Parse(typeof(Language), _systemLanguageSelect.ActiveId);
+            ConfigurationState.Instance.System.Language.Value                  = Enum.Parse<Language>(_systemLanguageSelect.ActiveId);
             ConfigurationState.Instance.Ui.CustomThemePath.Value               = _custThemePath.Buffer.Text;
             ConfigurationState.Instance.Graphics.ShadersDumpPath.Value         = _graphicsShadersDumpPath.Buffer.Text;
             ConfigurationState.Instance.Ui.GameDirs.Value                      = gameDirs;

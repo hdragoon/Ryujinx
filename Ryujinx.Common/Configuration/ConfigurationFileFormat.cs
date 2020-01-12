@@ -135,7 +135,7 @@ namespace Ryujinx.Configuration
         /// <summary>
         /// Keyboard control bindings
         /// </summary>
-        public NpadKeyboard KeyboardConfig { get; set; }
+        public List<NpadKeyboard> KeyboardConfig { get; set; }
 
         /// <summary>
         /// Controller control bindings

@@ -18,9 +18,14 @@
         public ControllerId ControllerId;
 
         /// <summary>
-        /// Controller Analog Stick Deadzone
+        /// Controller Left Analog Stick Deadzone
         /// </summary>
-        public float Deadzone;
+        public float DeadzoneLeft;
+
+        /// <summary>
+        /// Controller Right Analog Stick Deadzone
+        /// </summary>
+        public float DeadzoneRight;
 
         /// <summary>
         /// Controller Trigger Threshold
