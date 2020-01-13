@@ -16,6 +16,7 @@ namespace Ryujinx.Ui
 
         public ControllerButtons GetButtons(KeyboardState keyboard)
         {
+            //TODO: Uncomment this line and remove the "keyboard" parameter when the keyboard API is implemented in OpenTK.
             //KeyboardState keyboard = Keyboard.GetState(_inner.Index);
 
             ControllerButtons buttons = 0;
@@ -45,6 +46,7 @@ namespace Ryujinx.Ui
 
         public (short, short) GetLeftStick(KeyboardState keyboard)
         {
+            //TODO: Uncomment this line and remove the "keyboard" parameter when the keyboard API is implemented in OpenTK.
             //KeyboardState keyboard = Keyboard.GetState(_inner.Index);
 
             short dx = 0;
@@ -60,6 +62,7 @@ namespace Ryujinx.Ui
 
         public (short, short) GetRightStick(KeyboardState keyboard)
         {
+            //TODO: Uncomment this line and remove the "keyboard" parameter when the keyboard API is implemented in OpenTK.
             //KeyboardState keyboard = Keyboard.GetState(_inner.Index);
 
             short dx = 0;
@@ -75,6 +78,7 @@ namespace Ryujinx.Ui
 
         public HotkeyButtons GetHotkeyButtons(KeyboardState keyboard)
         {
+            //TODO: Uncomment this line and remove the "keyboard" parameter when the keyboard API is implemented in OpenTK.
             //KeyboardState keyboard = Keyboard.GetState(_inner.Index);
 
             HotkeyButtons buttons = 0;
@@ -236,6 +240,7 @@ namespace Ryujinx.Ui
 
         public HLE.Input.Keyboard GetKeysDown(KeyboardState keyboard)
         {
+            //TODO: Uncomment this line and remove the "keyboard" parameter when the keyboard API is implemented in OpenTK.
             //KeyboardState keyboard = Keyboard.GetState(_inner.Index);
 
             HLE.Input.Keyboard hidKeyboard = new HLE.Input.Keyboard

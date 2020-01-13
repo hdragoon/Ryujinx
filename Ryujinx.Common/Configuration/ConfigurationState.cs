@@ -282,7 +282,7 @@ namespace Ryujinx.Configuration
         {
             ConfigurationFileFormat configurationFile = new ConfigurationFileFormat
             {
-                Version                   = 1,
+                Version                   = 2,
                 GraphicsShadersDumpPath   = Graphics.ShadersDumpPath,
                 LoggingEnableDebug        = Logger.EnableDebug,
                 LoggingEnableStub         = Logger.EnableStub,
@@ -448,7 +448,7 @@ namespace Ryujinx.Configuration
 
         public void Load(ConfigurationFileFormat configurationFileFormat)
         {
-            if (configurationFileFormat.Version != 1 && configurationFileFormat.Version != 0)
+            if (configurationFileFormat.Version != 2)
             {
                 Common.Logging.Logger.PrintWarning(LogClass.Application, $"Unsupported configuration version {configurationFileFormat.Version}, loading default.");
 

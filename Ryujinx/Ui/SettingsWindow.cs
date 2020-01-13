@@ -258,8 +258,6 @@ namespace Ryujinx.Ui
             _gameDirsBoxStore.GetIterFirst(out TreeIter treeIter);
             for (int i = 0; i < _gameDirsBoxStore.IterNChildren(); i++)
             {
-                _gameDirsBoxStore.GetValue(treeIter, i);
-
                 gameDirs.Add((string)_gameDirsBoxStore.GetValue(treeIter, 0));
 
                 _gameDirsBoxStore.IterNext(ref treeIter);

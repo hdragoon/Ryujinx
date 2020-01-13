@@ -1,5 +1,5 @@
 {
-    "version": 1,
+    "version": 2,
     "graphics_shaders_dump_path": "",
     "logging_enable_debug": false,
     "logging_enable_stub": true,

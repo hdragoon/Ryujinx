@@ -4,17 +4,17 @@ using Ryujinx.Common.Configuration.Hid;
 using Ryujinx.HLE.Input;
 using System;
 
-using InnerNpadController = Ryujinx.Common.Configuration.Hid.NpadController;
+using NpadController = Ryujinx.Common.Configuration.Hid.NpadController;
 
-namespace Ryujinx.Ui.Input
+namespace Ryujinx.Ui
 {
-    public class NpadController
+    public class PhysicalController
     {
-        private InnerNpadController _inner;
+        private NpadController _inner;
 
         // NOTE: This should be initialized AFTER GTK for compat reasons with OpenTK SDL2 backend and GTK on Linux.
         // BODY: Usage of Joystick.GetState must be defer to after GTK full initialization. Otherwise, GTK will segfault because SDL2 was already init *sighs*
-        public NpadController(InnerNpadController inner)
+        public PhysicalController(NpadController inner)
         {
             _inner = inner;
         }

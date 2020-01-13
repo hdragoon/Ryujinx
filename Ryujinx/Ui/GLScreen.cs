@@ -1,7 +1,6 @@
 using OpenTK;
 using OpenTK.Graphics;
 using OpenTK.Input;
-using Ryujinx.Common.Configuration.Hid;
 using Ryujinx.Configuration;
 using Ryujinx.Graphics.OpenGL;
 using Ryujinx.HLE;
@@ -24,7 +23,7 @@ namespace Ryujinx.Ui
 
         private Renderer _renderer;
 
-        private HotkeyButtons[] _prevHotkeyButtons = new HotkeyButtons[ConfigurationState.Instance.Hid.KeyboardConfig.Value.Count];
+        private HotkeyButtons[] _prevHotkeyButtons;
 
         private KeyboardState? _keyboard = null;
 
@@ -52,6 +51,8 @@ namespace Ryujinx.Ui
             }
 
             _renderer = (Renderer)device.Gpu.Renderer;
+
+            _prevHotkeyButtons = new HotkeyButtons[ConfigurationState.Instance.Hid.KeyboardConfig.Value.Count];
 
             Location = new Point(
                 (DisplayDevice.Default.Width  / 2) - (Width  / 2),
@@ -229,7 +230,7 @@ namespace Ryujinx.Ui
             // Controller Input
             for (int i = 0; i < numControllers; i++)
             {
-                Input.NpadController controllerInput = new Input.NpadController(ConfigurationState.Instance.Hid.JoystickConfig.Value[i]);
+                PhysicalController controllerInput = new PhysicalController(ConfigurationState.Instance.Hid.JoystickConfig.Value[i]);
 
                 currentButtonController[i] |= controllerInput.GetButtons();
 
