@@ -422,6 +422,10 @@ namespace Ryujinx.Ui
                 });
             }
         }
+        public static void SaveConfig()
+        {
+            ConfigurationState.Instance.ToFileFormat().SaveConfig(System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Config.json"));
+        }
 
         private void End(HLE.Switch device)
         {
@@ -1032,11 +1036,6 @@ namespace Ryujinx.Ui
             {
                 return 0;
             }
-        }
-
-        public static void SaveConfig()
-        {
-            ConfigurationState.Instance.ToFileFormat().SaveConfig(System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Config.json"));
         }
     }
 }

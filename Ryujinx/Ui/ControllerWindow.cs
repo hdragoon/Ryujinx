@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Threading.Tasks;
 using Ryujinx.Configuration;
 using Ryujinx.Common.Configuration.Hid;
 
@@ -17,7 +18,7 @@ namespace Ryujinx.Ui
         private static ControllerId   _controllerId;
         private static NpadKeyboard   _keyboardConfig;
         private static NpadController _controllerConfig;
-        private static ToggleButton   _toggleButton;
+        private static Gdk.Key?       _pressedKey;
 
 #pragma warning disable CS0649
 #pragma warning disable IDE0044
@@ -181,6 +182,8 @@ namespace Ryujinx.Ui
         {
             ClearValues();
 
+            SetControllerSpecificFields();
+
             if (_inputDevice.ActiveId.StartsWith("keyboard"))
             {
                 if (_keyboardConfig == null) return;
@@ -247,8 +250,6 @@ namespace Ryujinx.Ui
                 _controllerTriggerThreshold.Value = _controllerConfig.TriggerThreshold;
             }
             else return;
-
-            SetControllerSpecificFields();
         }
 
         private void SetControllerSpecificFields()
@@ -333,10 +334,11 @@ namespace Ryujinx.Ui
 
         private static bool IsAnyButtonPressed(int index, double triggerThreshold, out ControllerInputId pressedButton)
         {
-            JoystickState joystickState = Joystick.GetState(index);
+            JoystickState joystickState               = Joystick.GetState(index);
+            JoystickCapabilities joystickCapabilities = Joystick.GetCapabilities(index);
 
             //Buttons
-            for (int i = 0; i != Joystick.GetCapabilities(index).ButtonCount; i++)
+            for (int i = 0; i != joystickCapabilities.ButtonCount; i++)
             {
                 if (joystickState.IsButtonDown(i))
                 {
@@ -346,7 +348,7 @@ namespace Ryujinx.Ui
             }
 
             //Axis
-            for (int i = 0; i != Joystick.GetCapabilities(index).AxisCount; i++)
+            for (int i = 0; i != joystickCapabilities.AxisCount; i++)
             {
                 if (joystickState.GetAxis(i) > triggerThreshold)
                 {
@@ -356,7 +358,7 @@ namespace Ryujinx.Ui
             }
 
             //Hats
-            for (int i = 0; i != Joystick.GetCapabilities(index).HatCount; i++)
+            for (int i = 0; i != joystickCapabilities.HatCount; i++)
             {
                 JoystickHatState hatState = joystickState.GetHat((JoystickHat)i);
                 string pos = null;
@@ -373,6 +375,12 @@ namespace Ryujinx.Ui
 
             pressedButton = ControllerInputId.Button0;
             return false;
+        }
+
+        [GLib.ConnectBefore]
+        private static void Key_Pressed(object sender, KeyPressEventArgs args)
+        {
+            _pressedKey = args.Event.Key;
         }
 
         //Events
@@ -393,56 +401,80 @@ namespace Ryujinx.Ui
             _refreshInputDevicesButton.SetStateFlags(0, true);
         }
 
-        private void Button_Pressed(object sender, EventArgs args)
+        //TODO: Replace events with polling when the keyboard API is implemented in OpenTK.
+        private async void Button_Pressed(object sender, EventArgs args)
         {
-            _toggleButton = (ToggleButton)sender;
-
-            if (_inputDevice.ActiveId.StartsWith("keyboard"))
+            await Task.Run(() =>
             {
-                //TODO: Remove this line and uncomment the code below when the keyboard API is implemented in OpenTK.
-                KeyPressEvent += OnKeyPress;
+                Button button = (ToggleButton)sender;
+                Application.Invoke(delegate { KeyPressEvent += Key_Pressed; });
 
-                /*Key pressedKey;
+                if (_inputDevice.ActiveId.StartsWith("keyboard"))
+                {
+                    while (!_pressedKey.HasValue)
+                    {
+                        if (Mouse.GetState().IsAnyButtonDown || _pressedKey == Gdk.Key.Escape)
+                        {
+                            _pressedKey = null;
+                            Application.Invoke(delegate
+                            {
+                                button.SetStateFlags(0, true);
+                                KeyPressEvent -= Key_Pressed;
+                            });
+                            return;
+                        }
+                    }
 
-                while (!IsAnyKeyPressed(out pressedKey)) { }
+                    string key    = _pressedKey.ToString();
+                    string capKey = key.First().ToString().ToUpper() + key.Substring(1);
+                    _pressedKey   = null;
 
-                _toggleButton.Label = pressedKey.ToString();
-                _toggleButton.SetStateFlags(0, true);*/
-            }
-            else if (_inputDevice.ActiveId.StartsWith("controller"))
-            {
-                ControllerInputId pressedButton;
+                    Application.Invoke(delegate
+                    {
+                        if (Enum.IsDefined(typeof(Key), capKey))
+                        {
+                            button.Label = capKey;
+                        }
+                        else if (GtkToOpenTkInput.ContainsKey(key))
+                        {
+                            button.Label = GtkToOpenTkInput[key];
+                        }
+                        else
+                        {
+                            button.Label = "Unknown";
+                        }
 
-                while (!IsAnyButtonPressed(int.Parse(_inputDevice.ActiveId.Split("/")[1]), _controllerTriggerThreshold.Value, out pressedButton)) { }
+                        button.SetStateFlags(0, true);
+                        KeyPressEvent -= Key_Pressed;
+                    });
+                }
+                else if (_inputDevice.ActiveId.StartsWith("controller"))
+                {
+                    ControllerInputId pressedButton;
 
-                _toggleButton.Label = pressedButton.ToString();
-                _toggleButton.SetStateFlags(0, true);
-            }
-        }
+                    int index = int.Parse(_inputDevice.ActiveId.Split("/")[1]);
+                    while (!IsAnyButtonPressed(index, _controllerTriggerThreshold.Value, out pressedButton))
+                    {
+                        if (Mouse.GetState().IsAnyButtonDown || _pressedKey.HasValue)
+                        {
+                            _pressedKey = null;
+                            Application.Invoke(delegate
+                            {
+                                button.SetStateFlags(0, true);
+                                KeyPressEvent -= Key_Pressed;
+                            });
+                            return;
+                        }
+                    }
 
-        //TODO: Remove this event method when the keyboard API is implemented in OpenTK.
-        [GLib.ConnectBefore]
-        private void OnKeyPress(object sender, KeyPressEventArgs args)
-        {
-            string key    = args.Event.Key.ToString();
-            string capKey = key.First().ToString().ToUpper() + key.Substring(1);
-
-            if (Enum.IsDefined(typeof(Key), capKey))
-            {
-                _toggleButton.Label = capKey;
-            }
-            else if (GtkToOpenTkInput.ContainsKey(key))
-            {
-                _toggleButton.Label = GtkToOpenTkInput[key];
-            }
-            else
-            {
-                _toggleButton.Label = "Unknown";
-            }
-
-            _toggleButton.SetStateFlags(0, true);
-
-            KeyPressEvent -= OnKeyPress;
+                    Application.Invoke(delegate
+                    {
+                        button.Label = pressedButton.ToString();
+                        button.SetStateFlags(0, true);
+                        KeyPressEvent -= Key_Pressed;
+                    });
+                }
+            });
         }
 
         private void SaveToggle_Activated(object sender, EventArgs args)

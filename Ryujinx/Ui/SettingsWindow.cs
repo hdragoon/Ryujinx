@@ -1,4 +1,4 @@
-﻿using Gtk;
+using Gtk;
 using Ryujinx.Configuration;
 using Ryujinx.Configuration.System;
 using System;
@@ -18,6 +18,7 @@ namespace Ryujinx.Ui
 #pragma warning disable CS0649
 #pragma warning disable IDE0044
         [GUI] Window       _settingsWin;
+        [GUI] Box          _buttonBox;
         [GUI] CheckButton  _errorLogToggle;
         [GUI] CheckButton  _warningLogToggle;
         [GUI] CheckButton  _infoLogToggle;
@@ -65,6 +66,7 @@ namespace Ryujinx.Ui
             builder.Autoconnect(this);
 
             _settingsWin.Icon = new Gdk.Pixbuf(Assembly.GetExecutingAssembly(), "Ryujinx.Ui.assets.Icon.png");
+            _buttonBox.Show();
 
             //Bind Events
             _configureController1.Pressed += (sender, args) => ConfigureController_Pressed(sender, args, ControllerId.ControllerPlayer1);
