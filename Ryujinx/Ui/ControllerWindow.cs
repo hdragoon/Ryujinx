@@ -4,7 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using System.Threading.Tasks;
+using System.Threading;
 using Ryujinx.Configuration;
 using Ryujinx.Common.Configuration.Hid;
 
@@ -402,9 +402,9 @@ namespace Ryujinx.Ui
         }
 
         //TODO: Replace events with polling when the keyboard API is implemented in OpenTK.
-        private async void Button_Pressed(object sender, EventArgs args)
+        private void Button_Pressed(object sender, EventArgs args)
         {
-            await Task.Run(() =>
+            Thread inputThread = new Thread(() =>
             {
                 Button button = (ToggleButton)sender;
                 Application.Invoke(delegate { KeyPressEvent += Key_Pressed; });
@@ -475,6 +475,8 @@ namespace Ryujinx.Ui
                     });
                 }
             });
+            inputThread.Name = "GUI.InputThread";
+            inputThread.Start();
         }
 
         private void SaveToggle_Activated(object sender, EventArgs args)
