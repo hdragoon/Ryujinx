@@ -64,7 +64,6 @@
                               <object class="GtkLabel">
                                 <property name="visible">True</property>
                                 <property name="can_focus">False</property>
-                                <property name="margin_left">5</property>
                                 <property name="margin_right">5</property>
                                 <property name="label" translatable="yes">Input Device</property>
                               </object>
@@ -79,7 +78,7 @@
                                 <property name="visible">True</property>
                                 <property name="can_focus">False</property>
                                 <property name="active">0</property>
-                                <property name="active_id">Disabled</property>
+                                <property name="active_id">disabled</property>
                                 <items>
                                   <item id="disabled" translatable="yes">Disabled</item>
                                 </items>
@@ -125,8 +124,6 @@
                                 <property name="tooltip_text" translatable="yes">The primary controller's type</property>
                                 <property name="halign">center</property>
                                 <property name="margin_right">5</property>
-                                <property name="margin_top">5</property>
-                                <property name="margin_bottom">5</property>
                                 <property name="label" translatable="yes">Controller Type:</property>
                               </object>
                               <packing>
@@ -161,6 +158,95 @@
                             <property name="expand">False</property>
                             <property name="fill">True</property>
                             <property name="position">1</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <object class="GtkBox" id="ProfileBox">
+                            <property name="visible">True</property>
+                            <property name="can_focus">False</property>
+                            <property name="margin_left">50</property>
+                            <child>
+                              <object class="GtkLabel">
+                                <property name="visible">True</property>
+                                <property name="can_focus">False</property>
+                                <property name="margin_right">5</property>
+                                <property name="label" translatable="yes">Profile:</property>
+                              </object>
+                              <packing>
+                                <property name="expand">False</property>
+                                <property name="fill">True</property>
+                                <property name="position">0</property>
+                              </packing>
+                            </child>
+                            <child>
+                              <object class="GtkComboBoxText" id="_profile">
+                                <property name="visible">True</property>
+                                <property name="can_focus">False</property>
+                                <property name="margin_right">5</property>
+                                <property name="active">0</property>
+                                <property name="active_id">default</property>
+                                <items>
+                                  <item id="default" translatable="yes">Default</item>
+                                </items>
+                              </object>
+                              <packing>
+                                <property name="expand">False</property>
+                                <property name="fill">True</property>
+                                <property name="position">1</property>
+                              </packing>
+                            </child>
+                            <child>
+                              <object class="GtkToggleButton">
+                                <property name="label" translatable="yes">Load</property>
+                                <property name="width_request">60</property>
+                                <property name="visible">True</property>
+                                <property name="can_focus">True</property>
+                                <property name="receives_default">True</property>
+                                <property name="margin_right">5</property>
+                                <signal name="toggled" handler="ProfileLoad_Activated" swapped="no"/>
+                              </object>
+                              <packing>
+                                <property name="expand">False</property>
+                                <property name="fill">True</property>
+                                <property name="position">2</property>
+                              </packing>
+                            </child>
+                            <child>
+                              <object class="GtkToggleButton">
+                                <property name="label" translatable="yes">Add</property>
+                                <property name="width_request">60</property>
+                                <property name="visible">True</property>
+                                <property name="can_focus">True</property>
+                                <property name="receives_default">True</property>
+                                <property name="margin_right">5</property>
+                                <signal name="toggled" handler="ProfileAdd_Activated" swapped="no"/>
+                              </object>
+                              <packing>
+                                <property name="expand">False</property>
+                                <property name="fill">True</property>
+                                <property name="position">3</property>
+                              </packing>
+                            </child>
+                            <child>
+                              <object class="GtkToggleButton">
+                                <property name="label" translatable="yes">Remove</property>
+                                <property name="width_request">60</property>
+                                <property name="visible">True</property>
+                                <property name="can_focus">True</property>
+                                <property name="receives_default">True</property>
+                                <signal name="toggled" handler="ProfileRemove_Activated" swapped="no"/>
+                              </object>
+                              <packing>
+                                <property name="expand">False</property>
+                                <property name="fill">True</property>
+                                <property name="position">4</property>
+                              </packing>
+                            </child>
+                          </object>
+                          <packing>
+                            <property name="expand">False</property>
+                            <property name="fill">True</property>
+                            <property name="position">2</property>
                           </packing>
                         </child>
                       </object>

@@ -2,11 +2,14 @@ using Gtk;
 using OpenTK.Input;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Threading;
 using Ryujinx.Configuration;
 using Ryujinx.Common.Configuration.Hid;
+using Utf8Json;
+using Utf8Json.Resolvers;
 
 using GUI = Gtk.Builder.ObjectAttribute;
 using Key = Ryujinx.Configuration.Hid.Key;
@@ -19,6 +22,8 @@ namespace Ryujinx.Ui
         private static NpadKeyboard   _keyboardConfig;
         private static NpadController _controllerConfig;
         private static Gdk.Key?       _pressedKey;
+        private static bool           _isWaitingForInput;
+        private static IJsonFormatterResolver _resolver;
 
 #pragma warning disable CS0649
 #pragma warning disable IDE0044
@@ -27,6 +32,7 @@ namespace Ryujinx.Ui
         [GUI] Adjustment   _controllerDeadzoneRight;
         [GUI] Adjustment   _controllerTriggerThreshold;
         [GUI] ComboBoxText _inputDevice;
+        [GUI] ComboBoxText _profile;
         [GUI] ToggleButton _refreshInputDevicesButton;
         [GUI] Box          _settingsBox;
         [GUI] Grid         _leftStickKeyboard;
@@ -82,6 +88,10 @@ namespace Ryujinx.Ui
             _keyboardConfig     = ConfigurationState.Instance.Hid.KeyboardConfig.Value.Find(controller => controller.ControllerId == _controllerId);
             _controllerConfig   = ConfigurationState.Instance.Hid.JoystickConfig.Value.Find(controller => controller.ControllerId == _controllerId);
             _controllerWin.Icon = new Gdk.Pixbuf(Assembly.GetExecutingAssembly(), "Ryujinx.Ui.assets.Icon.png");
+            _resolver           = CompositeResolver.Create(
+                new[] { new ConfigurationFileFormat.ConfigurationEnumFormatter<Key>() },
+                new[] { StandardResolver.AllowPrivateSnakeCase }
+            );
 
             //Bind Events
             _lStickX.Clicked        += Button_Pressed;
@@ -184,72 +194,20 @@ namespace Ryujinx.Ui
 
             SetControllerSpecificFields();
 
+            //TODO: Append controller profiles to list
+
             if (_inputDevice.ActiveId.StartsWith("keyboard"))
             {
                 if (_keyboardConfig == null) return;
 
-                _controllerType.SetActiveId(_keyboardConfig.ControllerType.ToString());
-
-                _lStickUp.Label     = _keyboardConfig.LeftJoycon.StickUp.ToString();
-                _lStickDown.Label   = _keyboardConfig.LeftJoycon.StickDown.ToString();
-                _lStickLeft.Label   = _keyboardConfig.LeftJoycon.StickLeft.ToString();
-                _lStickRight.Label  = _keyboardConfig.LeftJoycon.StickRight.ToString();
-                _lStickButton.Label = _keyboardConfig.LeftJoycon.StickButton.ToString();
-                _dpadUp.Label       = _keyboardConfig.LeftJoycon.DPadUp.ToString();
-                _dpadDown.Label     = _keyboardConfig.LeftJoycon.DPadDown.ToString();
-                _dpadLeft.Label     = _keyboardConfig.LeftJoycon.DPadLeft.ToString();
-                _dpadRight.Label    = _keyboardConfig.LeftJoycon.DPadRight.ToString();
-                _minus.Label        = _keyboardConfig.LeftJoycon.ButtonMinus.ToString();
-                _l.Label            = _keyboardConfig.LeftJoycon.ButtonL.ToString();
-                _zL.Label           = _keyboardConfig.LeftJoycon.ButtonZl.ToString();
-                _sL.Label           = _keyboardConfig.LeftJoycon.ButtonSl.ToString();
-                _rStickUp.Label     = _keyboardConfig.RightJoycon.StickUp.ToString();
-                _rStickDown.Label   = _keyboardConfig.RightJoycon.StickDown.ToString();
-                _rStickLeft.Label   = _keyboardConfig.RightJoycon.StickLeft.ToString();
-                _rStickRight.Label  = _keyboardConfig.RightJoycon.StickRight.ToString();
-                _rStickButton.Label = _keyboardConfig.RightJoycon.StickButton.ToString();
-                _a.Label            = _keyboardConfig.RightJoycon.ButtonA.ToString();
-                _b.Label            = _keyboardConfig.RightJoycon.ButtonB.ToString();
-                _x.Label            = _keyboardConfig.RightJoycon.ButtonX.ToString();
-                _y.Label            = _keyboardConfig.RightJoycon.ButtonY.ToString();
-                _plus.Label         = _keyboardConfig.RightJoycon.ButtonPlus.ToString();
-                _r.Label            = _keyboardConfig.RightJoycon.ButtonR.ToString();
-                _zR.Label           = _keyboardConfig.RightJoycon.ButtonZr.ToString();
-                _sR.Label           = _keyboardConfig.RightJoycon.ButtonSr.ToString();
+                SetValues(_keyboardConfig);
             }
             else if(_inputDevice.ActiveId.StartsWith("controller"))
             {
                 if (_controllerConfig == null) return;
 
-                _controllerType.SetActiveId(_controllerConfig.ControllerType.ToString());
-
-                _lStickX.Label                    = _controllerConfig.LeftJoycon.StickX.ToString();
-                _lStickY.Label                    = _controllerConfig.LeftJoycon.StickY.ToString();
-                _lStickButton.Label               = _controllerConfig.LeftJoycon.StickButton.ToString();
-                _dpadUp.Label                     = _controllerConfig.LeftJoycon.DPadUp.ToString();
-                _dpadDown.Label                   = _controllerConfig.LeftJoycon.DPadDown.ToString();
-                _dpadLeft.Label                   = _controllerConfig.LeftJoycon.DPadLeft.ToString();
-                _dpadRight.Label                  = _controllerConfig.LeftJoycon.DPadRight.ToString();
-                _minus.Label                      = _controllerConfig.LeftJoycon.ButtonMinus.ToString();
-                _l.Label                          = _controllerConfig.LeftJoycon.ButtonL.ToString();
-                _zL.Label                         = _controllerConfig.LeftJoycon.ButtonZl.ToString();
-                _sL.Label                         = _controllerConfig.LeftJoycon.ButtonSl.ToString();
-                _rStickX.Label                    = _controllerConfig.RightJoycon.StickX.ToString();
-                _rStickY.Label                    = _controllerConfig.RightJoycon.StickY.ToString();
-                _rStickButton.Label               = _controllerConfig.RightJoycon.StickButton.ToString();
-                _a.Label                          = _controllerConfig.RightJoycon.ButtonA.ToString();
-                _b.Label                          = _controllerConfig.RightJoycon.ButtonB.ToString();
-                _x.Label                          = _controllerConfig.RightJoycon.ButtonX.ToString();
-                _y.Label                          = _controllerConfig.RightJoycon.ButtonY.ToString();
-                _plus.Label                       = _controllerConfig.RightJoycon.ButtonPlus.ToString();
-                _r.Label                          = _controllerConfig.RightJoycon.ButtonR.ToString();
-                _zR.Label                         = _controllerConfig.RightJoycon.ButtonZr.ToString();
-                _sR.Label                         = _controllerConfig.RightJoycon.ButtonSr.ToString();
-                _controllerDeadzoneLeft.Value     = _controllerConfig.DeadzoneLeft;
-                _controllerDeadzoneRight.Value    = _controllerConfig.DeadzoneRight;
-                _controllerTriggerThreshold.Value = _controllerConfig.TriggerThreshold;
+                SetValues(_controllerConfig);
             }
-            else return;
         }
 
         private void SetControllerSpecificFields()
@@ -313,6 +271,75 @@ namespace Ryujinx.Ui
             _controllerDeadzoneLeft.Value     = 0;
             _controllerDeadzoneRight.Value    = 0;
             _controllerTriggerThreshold.Value = 0;
+        }
+
+        private void SetValues(object config)
+        {
+            if (config.GetType() == typeof(NpadKeyboard))
+            {
+                NpadKeyboard keyboardConfig = (NpadKeyboard)config;
+
+                _controllerType.SetActiveId(keyboardConfig.ControllerType.ToString());
+
+                _lStickUp.Label     = keyboardConfig.LeftJoycon.StickUp.ToString();
+                _lStickDown.Label   = keyboardConfig.LeftJoycon.StickDown.ToString();
+                _lStickLeft.Label   = keyboardConfig.LeftJoycon.StickLeft.ToString();
+                _lStickRight.Label  = keyboardConfig.LeftJoycon.StickRight.ToString();
+                _lStickButton.Label = keyboardConfig.LeftJoycon.StickButton.ToString();
+                _dpadUp.Label       = keyboardConfig.LeftJoycon.DPadUp.ToString();
+                _dpadDown.Label     = keyboardConfig.LeftJoycon.DPadDown.ToString();
+                _dpadLeft.Label     = keyboardConfig.LeftJoycon.DPadLeft.ToString();
+                _dpadRight.Label    = keyboardConfig.LeftJoycon.DPadRight.ToString();
+                _minus.Label        = keyboardConfig.LeftJoycon.ButtonMinus.ToString();
+                _l.Label            = keyboardConfig.LeftJoycon.ButtonL.ToString();
+                _zL.Label           = keyboardConfig.LeftJoycon.ButtonZl.ToString();
+                _sL.Label           = keyboardConfig.LeftJoycon.ButtonSl.ToString();
+                _rStickUp.Label     = keyboardConfig.RightJoycon.StickUp.ToString();
+                _rStickDown.Label   = keyboardConfig.RightJoycon.StickDown.ToString();
+                _rStickLeft.Label   = keyboardConfig.RightJoycon.StickLeft.ToString();
+                _rStickRight.Label  = keyboardConfig.RightJoycon.StickRight.ToString();
+                _rStickButton.Label = keyboardConfig.RightJoycon.StickButton.ToString();
+                _a.Label            = keyboardConfig.RightJoycon.ButtonA.ToString();
+                _b.Label            = keyboardConfig.RightJoycon.ButtonB.ToString();
+                _x.Label            = keyboardConfig.RightJoycon.ButtonX.ToString();
+                _y.Label            = keyboardConfig.RightJoycon.ButtonY.ToString();
+                _plus.Label         = keyboardConfig.RightJoycon.ButtonPlus.ToString();
+                _r.Label            = keyboardConfig.RightJoycon.ButtonR.ToString();
+                _zR.Label           = keyboardConfig.RightJoycon.ButtonZr.ToString();
+                _sR.Label           = keyboardConfig.RightJoycon.ButtonSr.ToString();
+            }
+            else if (config.GetType() == typeof(NpadController))
+            {
+                NpadController controllerConfig = (NpadController)config;
+
+                _controllerType.SetActiveId(controllerConfig.ControllerType.ToString());
+
+                _lStickX.Label                    = controllerConfig.LeftJoycon.StickX.ToString();
+                _lStickY.Label                    = controllerConfig.LeftJoycon.StickY.ToString();
+                _lStickButton.Label               = controllerConfig.LeftJoycon.StickButton.ToString();
+                _dpadUp.Label                     = controllerConfig.LeftJoycon.DPadUp.ToString();
+                _dpadDown.Label                   = controllerConfig.LeftJoycon.DPadDown.ToString();
+                _dpadLeft.Label                   = controllerConfig.LeftJoycon.DPadLeft.ToString();
+                _dpadRight.Label                  = controllerConfig.LeftJoycon.DPadRight.ToString();
+                _minus.Label                      = controllerConfig.LeftJoycon.ButtonMinus.ToString();
+                _l.Label                          = controllerConfig.LeftJoycon.ButtonL.ToString();
+                _zL.Label                         = controllerConfig.LeftJoycon.ButtonZl.ToString();
+                _sL.Label                         = controllerConfig.LeftJoycon.ButtonSl.ToString();
+                _rStickX.Label                    = controllerConfig.RightJoycon.StickX.ToString();
+                _rStickY.Label                    = controllerConfig.RightJoycon.StickY.ToString();
+                _rStickButton.Label               = controllerConfig.RightJoycon.StickButton.ToString();
+                _a.Label                          = controllerConfig.RightJoycon.ButtonA.ToString();
+                _b.Label                          = controllerConfig.RightJoycon.ButtonB.ToString();
+                _x.Label                          = controllerConfig.RightJoycon.ButtonX.ToString();
+                _y.Label                          = controllerConfig.RightJoycon.ButtonY.ToString();
+                _plus.Label                       = controllerConfig.RightJoycon.ButtonPlus.ToString();
+                _r.Label                          = controllerConfig.RightJoycon.ButtonR.ToString();
+                _zR.Label                         = controllerConfig.RightJoycon.ButtonZr.ToString();
+                _sR.Label                         = controllerConfig.RightJoycon.ButtonSr.ToString();
+                _controllerDeadzoneLeft.Value     = controllerConfig.DeadzoneLeft;
+                _controllerDeadzoneRight.Value    = controllerConfig.DeadzoneRight;
+                _controllerTriggerThreshold.Value = controllerConfig.TriggerThreshold;
+            }
         }
 
         private static bool IsAnyKeyPressed(out Key pressedKey, int index = 0)
@@ -404,6 +431,10 @@ namespace Ryujinx.Ui
         //TODO: Replace events with polling when the keyboard API is implemented in OpenTK.
         private void Button_Pressed(object sender, EventArgs args)
         {
+            if (_isWaitingForInput) 
+                return;
+            _isWaitingForInput = true;
+
             Thread inputThread = new Thread(() =>
             {
                 Button button = (ToggleButton)sender;
@@ -415,12 +446,13 @@ namespace Ryujinx.Ui
                     {
                         if (Mouse.GetState().IsAnyButtonDown || _pressedKey == Gdk.Key.Escape)
                         {
-                            _pressedKey = null;
                             Application.Invoke(delegate
                             {
                                 button.SetStateFlags(0, true);
                                 KeyPressEvent -= Key_Pressed;
                             });
+                            _pressedKey        = null;
+                            _isWaitingForInput = false;
                             return;
                         }
                     }
@@ -457,12 +489,13 @@ namespace Ryujinx.Ui
                     {
                         if (Mouse.GetState().IsAnyButtonDown || _pressedKey.HasValue)
                         {
-                            _pressedKey = null;
                             Application.Invoke(delegate
                             {
                                 button.SetStateFlags(0, true);
                                 KeyPressEvent -= Key_Pressed;
                             });
+                            _pressedKey        = null;
+                            _isWaitingForInput = false;
                             return;
                         }
                     }
@@ -474,9 +507,165 @@ namespace Ryujinx.Ui
                         KeyPressEvent -= Key_Pressed;
                     });
                 }
+
+                _isWaitingForInput = false;
             });
             inputThread.Name = "GUI.InputThread";
+            inputThread.IsBackground = true;
             inputThread.Start();
+        }
+
+        private void ProfileLoad_Activated(object sender, EventArgs args)
+        {
+            ((ToggleButton)sender).SetStateFlags(0, true);
+
+            object config = null;
+            int pos       = _profile.Active;
+
+            if (_profile.ActiveId == "default")
+            {
+                if (_inputDevice.ActiveId.StartsWith("keyboard"))
+                {
+                    config = new NpadKeyboard
+                    {
+                        Index          = 0,
+                        ControllerType = ControllerType.Handheld,
+                        ControllerId   = ControllerId.ControllerHandheld,
+                        LeftJoycon     = new NpadKeyboardLeft
+                        {
+                            StickUp     = Key.W,
+                            StickDown   = Key.S,
+                            StickLeft   = Key.A,
+                            StickRight  = Key.D,
+                            StickButton = Key.F,
+                            DPadUp      = Key.Up,
+                            DPadDown    = Key.Down,
+                            DPadLeft    = Key.Left,
+                            DPadRight   = Key.Right,
+                            ButtonMinus = Key.Minus,
+                            ButtonL     = Key.E,
+                            ButtonZl    = Key.Q,
+                            ButtonSl    = Key.R,
+                        },
+                        RightJoycon    = new NpadKeyboardRight
+                        {
+                            StickUp     = Key.I,
+                            StickDown   = Key.K,
+                            StickLeft   = Key.J,
+                            StickRight  = Key.L,
+                            StickButton = Key.H,
+                            ButtonA     = Key.Z,
+                            ButtonB     = Key.X,
+                            ButtonX     = Key.C,
+                            ButtonY     = Key.V,
+                            ButtonPlus  = Key.Plus,
+                            ButtonR     = Key.U,
+                            ButtonZr    = Key.O,
+                            ButtonSr    = Key.Y,
+                        },
+                        Hotkeys        = new KeyboardHotkeys
+                        {
+                            ToggleVsync = Key.Tab
+                        }
+                    };
+                }
+                else if (_inputDevice.ActiveId.StartsWith("controller"))
+                {
+                    config = new NpadController
+                    {
+                        Index            = 0,
+                        ControllerType   = ControllerType.ProController,
+                        ControllerId     = ControllerId.ControllerPlayer1,
+                        DeadzoneLeft     = 0.05f,
+                        DeadzoneRight    = 0.05f,
+                        TriggerThreshold = 0.5f,
+                        LeftJoycon       = new NpadControllerLeft
+                        {
+                            StickX = ControllerInputId.Axis0,
+                            StickY = ControllerInputId.Axis1,
+                            StickButton = ControllerInputId.Button8,
+                            DPadUp      = ControllerInputId.Hat0Up,
+                            DPadDown    = ControllerInputId.Hat0Down,
+                            DPadLeft    = ControllerInputId.Hat0Left,
+                            DPadRight   = ControllerInputId.Hat0Right,
+                            ButtonMinus = ControllerInputId.Button6,
+                            ButtonL     = ControllerInputId.Button4,
+                            ButtonZl    = ControllerInputId.Axis2,
+                        },
+                        RightJoycon = new NpadControllerRight
+                        {
+                            StickX      = ControllerInputId.Axis3,
+                            StickY      = ControllerInputId.Axis4,
+                            StickButton = ControllerInputId.Button9,
+                            ButtonA     = ControllerInputId.Button1,
+                            ButtonB     = ControllerInputId.Button0,
+                            ButtonX     = ControllerInputId.Button3,
+                            ButtonY     = ControllerInputId.Button2,
+                            ButtonPlus  = ControllerInputId.Button7,
+                            ButtonR     = ControllerInputId.Button5,
+                            ButtonZr    = ControllerInputId.Axis5,
+                        }
+                    };
+                }
+            }
+            else
+            {
+                string path = _profile.ActiveId;
+
+                if (!File.Exists(path))
+                {
+                    if (pos >= 0)
+                    {
+                        _profile.Remove(pos);
+                    }
+
+                    return;
+                }
+                
+                if (_inputDevice.ActiveId.StartsWith("keyboard"))
+                {
+                    using (Stream stream = File.OpenRead(path))
+                    {
+                        config = JsonSerializer.Deserialize<NpadKeyboard>(stream, _resolver);
+                    }
+                }
+                else if (_inputDevice.ActiveId.StartsWith("controller"))
+                {
+                    using (Stream stream = File.OpenRead(path))
+                    {
+                        config = JsonSerializer.Deserialize<NpadController>(stream, _resolver);
+                    }
+                }
+            }
+
+            SetValues(config);
+        }
+
+        private void ProfileAdd_Activated(object sender, EventArgs args)
+        {
+            ((ToggleButton)sender).SetStateFlags(0, true);
+
+            //TODO: Implement this
+        }
+
+        private void ProfileRemove_Activated(object sender, EventArgs args)
+        {
+            ((ToggleButton)sender).SetStateFlags(0, true);
+
+            if (_profile.ActiveId == "default") return;
+            
+            int pos     = _profile.Active;
+            string path = _profile.ActiveId;
+
+            if (pos >= 0)
+            {
+                _profile.Remove(pos);
+            }
+
+            if (File.Exists(path))
+            {
+                File.Delete(path);
+            }
         }
 
         private void SaveToggle_Activated(object sender, EventArgs args)
