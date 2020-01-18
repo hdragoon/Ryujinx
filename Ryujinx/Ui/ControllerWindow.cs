@@ -1,13 +1,16 @@
 using Gtk;
+using JsonPrettyPrinterPlus;
 using OpenTK.Input;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Text;
 using System.Threading;
 using Ryujinx.Configuration;
 using Ryujinx.Common.Configuration.Hid;
+using Ryujinx.HLE.FileSystem;
 using Utf8Json;
 using Utf8Json.Resolvers;
 
@@ -26,7 +29,6 @@ namespace Ryujinx.Ui
 
 #pragma warning disable CS0649
 #pragma warning disable IDE0044
-        [GUI] Window       _controllerWin;
         [GUI] Adjustment   _controllerDeadzoneLeft;
         [GUI] Adjustment   _controllerDeadzoneRight;
         [GUI] Adjustment   _controllerTriggerThreshold;
@@ -83,9 +85,9 @@ namespace Ryujinx.Ui
         {
             builder.Autoconnect(this);
 
-            _controllerId       = controllerId;
-            _controllerWin.Icon = new Gdk.Pixbuf(Assembly.GetExecutingAssembly(), "Ryujinx.Ui.assets.Icon.png");
-            _inputConfig        = ConfigurationState.Instance.Hid.InputConfig.Value.Find(inputConfig =>
+            _controllerId = controllerId;
+            this.Icon     = new Gdk.Pixbuf(Assembly.GetExecutingAssembly(), "Ryujinx.Ui.assets.Icon.png");
+            _inputConfig  = ConfigurationState.Instance.Hid.InputConfig.Value.Find(inputConfig =>
             {
                 if (inputConfig is NpadController controllerConfig) 
                     return controllerConfig.ControllerId == _controllerId;
@@ -94,7 +96,7 @@ namespace Ryujinx.Ui
                 else 
                     return false;
             });
-            _resolver           = CompositeResolver.Create(
+            _resolver = CompositeResolver.Create(
                 new[] { new ConfigurationFileFormat.ConfigurationEnumFormatter<Key>() },
                 new[] { StandardResolver.AllowPrivateSnakeCase }
             );
@@ -171,7 +173,7 @@ namespace Ryujinx.Ui
         {
             if (_inputDevice.ActiveId != null && _inputDevice.ActiveId.StartsWith("keyboard"))
             {
-                _controllerWin.ShowAll();
+                this.ShowAll();
                 _leftStickController.Hide();
                 _rightStickController.Hide();
                 _deadZoneLeftBox.Hide();
@@ -182,7 +184,7 @@ namespace Ryujinx.Ui
             }
             else if (_inputDevice.ActiveId != null && _inputDevice.ActiveId.StartsWith("controller"))
             {
-                _controllerWin.ShowAll();
+                this.ShowAll();
                 _leftStickKeyboard.Hide();
                 _rightStickKeyboard.Hide();
 
@@ -200,7 +202,7 @@ namespace Ryujinx.Ui
 
             SetControllerSpecificFields();
 
-            //TODO: Append controller profiles to list
+            SetProfiles();
 
             if (_inputDevice.ActiveId.StartsWith("keyboard") && _inputConfig is NpadKeyboard)
             {
@@ -279,6 +281,9 @@ namespace Ryujinx.Ui
         {
             if (config is NpadKeyboard keyboardConfig)
             {
+                if (!_inputDevice.ActiveId.StartsWith("keyboard")) 
+                    _inputDevice.SetActiveId($"keyboard/{keyboardConfig.Index}");
+                
                 _controllerType.SetActiveId(keyboardConfig.ControllerType.ToString());
 
                 _lStickUp.Label     = keyboardConfig.LeftJoycon.StickUp.ToString();
@@ -310,6 +315,9 @@ namespace Ryujinx.Ui
             }
             else if (config is NpadController controllerConfig)
             {
+                if (!_inputDevice.ActiveId.StartsWith("controller"))
+                    _inputDevice.SetActiveId($"controller/{controllerConfig.Index}");
+
                 _controllerType.SetActiveId(controllerConfig.ControllerType.ToString());
 
                 _lStickX.Label                    = controllerConfig.LeftJoycon.StickX.ToString();
@@ -613,9 +621,29 @@ namespace Ryujinx.Ui
             inputThread.Start();
         }
 
+        private void SetProfiles()
+        {
+            string basePath = System.IO.Path.Combine(new VirtualFileSystem().GetBasePath(), "profiles");
+            
+            if (!Directory.Exists(basePath))
+            {
+                Directory.CreateDirectory(basePath);
+            }
+
+            _profile.RemoveAll();
+            _profile.Append("default", "Default");
+
+            foreach (string profile in Directory.GetFiles(basePath, "*.*", SearchOption.AllDirectories))
+            {
+                _profile.Append(System.IO.Path.GetFileName(profile), System.IO.Path.GetFileNameWithoutExtension(profile));
+            }
+        }
+
         private void ProfileLoad_Activated(object sender, EventArgs args)
         {
             ((ToggleButton)sender).SetStateFlags(0, true);
+
+            if (_inputDevice.ActiveId == "disabled" || _profile.ActiveId == null) return;
 
             object config = null;
             int pos       = _profile.Active;
@@ -708,7 +736,7 @@ namespace Ryujinx.Ui
             }
             else
             {
-                string path = _profile.ActiveId;
+                string path = System.IO.Path.Combine(new VirtualFileSystem().GetBasePath(), "profiles", _profile.ActiveId);
 
                 if (!File.Exists(path))
                 {
@@ -719,19 +747,20 @@ namespace Ryujinx.Ui
 
                     return;
                 }
-                
-                if (_inputDevice.ActiveId.StartsWith("keyboard"))
+
+                using (Stream stream = File.OpenRead(path))
                 {
-                    using (Stream stream = File.OpenRead(path))
-                    {
-                        config = JsonSerializer.Deserialize<NpadKeyboard>(stream, _resolver);
-                    }
-                }
-                else if (_inputDevice.ActiveId.StartsWith("controller"))
-                {
-                    using (Stream stream = File.OpenRead(path))
+                    try
                     {
                         config = JsonSerializer.Deserialize<NpadController>(stream, _resolver);
+                    }
+                    catch (ArgumentException)
+                    {
+                        try
+                        {
+                            config = JsonSerializer.Deserialize<NpadKeyboard>(stream, _resolver);
+                        }
+                        catch { }
                     }
                 }
             }
@@ -743,27 +772,40 @@ namespace Ryujinx.Ui
         {
             ((ToggleButton)sender).SetStateFlags(0, true);
 
-            //TODO: Implement this
+            if (_inputDevice.ActiveId == "disabled") return;
+
+            object inputConfig          = GetValues();
+            ProfileDialog profileDialog = new ProfileDialog();
+
+            if (inputConfig == null) return;
+
+            if (profileDialog.Run() == (int)ResponseType.Ok)
+            {
+                string path = System.IO.Path.Combine(new VirtualFileSystem().GetBasePath(), "profiles", profileDialog.FileName);
+                byte[] data = JsonSerializer.Serialize(inputConfig, _resolver);
+
+                File.WriteAllText(path, Encoding.UTF8.GetString(data, 0, data.Length).PrettyPrintJson());
+            }
+
+            profileDialog.Dispose();
+
+            SetProfiles();
         }
 
         private void ProfileRemove_Activated(object sender, EventArgs args)
         {
             ((ToggleButton)sender).SetStateFlags(0, true);
 
-            if (_profile.ActiveId == "default") return;
+            if (_inputDevice.ActiveId == "disabled" || _profile.ActiveId == "default" || _profile.ActiveId == null) return;
             
-            int pos     = _profile.Active;
-            string path = _profile.ActiveId;
-
-            if (pos >= 0)
-            {
-                _profile.Remove(pos);
-            }
+            string path = System.IO.Path.Combine(new VirtualFileSystem().GetBasePath(), "profiles", _profile.ActiveId);
 
             if (File.Exists(path))
             {
                 File.Delete(path);
             }
+
+            SetProfiles();
         }
 
         private void SaveToggle_Activated(object sender, EventArgs args)

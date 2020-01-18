@@ -1,6 +1,7 @@
 using OpenTK.Input;
 using Ryujinx.Common.Configuration.Hid;
 using Ryujinx.HLE.Input;
+
 using Keyboard = OpenTK.Input.Keyboard;
 
 namespace Ryujinx.Ui

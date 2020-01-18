@@ -31,7 +31,7 @@ namespace Ryujinx.Ui
             int dialogResponse;
 
             using (MessageDialog dialog = new MessageDialog(parentWindow, DialogFlags.Modal, MessageType.Question,
-                ButtonsType.YesNo, null))
+                ButtonsType.YesNo, "What's this?"))
             {
                 dialog.Title = "Data Migration Needed";
                 dialog.Icon = new Gdk.Pixbuf(Assembly.GetExecutingAssembly(), "Ryujinx.Ui.assets.Icon.png");

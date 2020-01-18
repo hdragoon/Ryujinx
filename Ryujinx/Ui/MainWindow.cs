@@ -43,7 +43,6 @@ namespace Ryujinx.Ui
         private static Debugger.Debugger _debugger;
 #pragma warning disable CS0649
 #pragma warning disable IDE0044
-        [GUI] Window        _mainWin;
         [GUI] CheckMenuItem _fullScreen;
         [GUI] MenuItem      _stopEmulation;
         [GUI] CheckMenuItem _favToggle;
@@ -106,7 +105,7 @@ namespace Ryujinx.Ui
 
             ApplyTheme();
 
-            _mainWin.Icon            = new Gdk.Pixbuf(Assembly.GetExecutingAssembly(), "Ryujinx.Ui.assets.Icon.png");
+            this.Icon                = new Gdk.Pixbuf(Assembly.GetExecutingAssembly(), "Ryujinx.Ui.assets.Icon.png");
             _stopEmulation.Sensitive = false;
 
             if (ConfigurationState.Instance.Ui.GuiColumns.FavColumn)        _favToggle.Active        = true;

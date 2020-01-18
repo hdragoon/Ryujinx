@@ -116,7 +116,7 @@
                           <object class="GtkBox" id="ControllerTypeBox">
                             <property name="visible">True</property>
                             <property name="can_focus">False</property>
-                            <property name="margin_left">50</property>
+                            <property name="margin_left">20</property>
                             <child>
                               <object class="GtkLabel">
                                 <property name="visible">True</property>
@@ -164,7 +164,7 @@
                           <object class="GtkBox" id="ProfileBox">
                             <property name="visible">True</property>
                             <property name="can_focus">False</property>
-                            <property name="margin_left">50</property>
+                            <property name="margin_left">20</property>
                             <child>
                               <object class="GtkLabel">
                                 <property name="visible">True</property>
@@ -185,9 +185,6 @@
                                 <property name="margin_right">5</property>
                                 <property name="active">0</property>
                                 <property name="active_id">default</property>
-                                <items>
-                                  <item id="default" translatable="yes">Default</item>
-                                </items>
                               </object>
                               <packing>
                                 <property name="expand">False</property>

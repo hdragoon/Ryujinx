@@ -47,6 +47,7 @@
     <None Remove="Ui\ControllerWindow.glade" />
     <None Remove="Ui\GameTableContextMenu.glade" />
     <None Remove="Ui\MainWindow.glade" />
+    <None Remove="Ui\ProfileDialog.glade" />
     <None Remove="Ui\SettingsWindow.glade" />
   </ItemGroup>
 
@@ -69,6 +70,7 @@
     <EmbeddedResource Include="Ui\ControllerWindow.glade" />
     <EmbeddedResource Include="Ui\GameTableContextMenu.glade" />
     <EmbeddedResource Include="Ui\MainWindow.glade" />
+    <EmbeddedResource Include="Ui\ProfileDialog.glade" />
     <EmbeddedResource Include="Ui\SettingsWindow.glade" />
   </ItemGroup>
 

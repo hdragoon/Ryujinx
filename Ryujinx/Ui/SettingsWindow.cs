@@ -17,7 +17,6 @@ namespace Ryujinx.Ui
 
 #pragma warning disable CS0649
 #pragma warning disable IDE0044
-        [GUI] Window       _settingsWin;
         [GUI] Box          _buttonBox;
         [GUI] CheckButton  _errorLogToggle;
         [GUI] CheckButton  _warningLogToggle;
@@ -65,7 +64,7 @@ namespace Ryujinx.Ui
         {
             builder.Autoconnect(this);
 
-            _settingsWin.Icon = new Gdk.Pixbuf(Assembly.GetExecutingAssembly(), "Ryujinx.Ui.assets.Icon.png");
+            this.Icon = new Gdk.Pixbuf(Assembly.GetExecutingAssembly(), "Ryujinx.Ui.assets.Icon.png");
             _buttonBox.Show();
 
             //Bind Events
