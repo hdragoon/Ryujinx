@@ -194,20 +194,14 @@ namespace Ryujinx.Configuration
             public ReactiveObject<bool> EnableKeyboard { get; private set; }
 
             /// <summary>
-            /// Keyboard control bindings
+            /// Input device configuration
             /// </summary>
-            public ReactiveObject<List<NpadKeyboard>> KeyboardConfig { get; private set; }
-
-            /// <summary>
-            /// Controller control bindings
-            /// </summary>
-            public ReactiveObject<List<NpadController>> JoystickConfig { get; private set; }
+            public ReactiveObject<List<object>> InputConfig { get; private set; }
 
             public HidSection()
             {
                 EnableKeyboard = new ReactiveObject<bool>();
-                KeyboardConfig = new ReactiveObject<List<NpadKeyboard>>();
-                JoystickConfig = new ReactiveObject<List<NpadController>>();
+                InputConfig    = new ReactiveObject<List<object>>();
             }
         }
 
@@ -280,6 +274,21 @@ namespace Ryujinx.Configuration
 
         public ConfigurationFileFormat ToFileFormat()
         {
+            List<NpadController> controllerConfigList = new List<NpadController>();
+            List<NpadKeyboard> keyboardConfigList     = new List<NpadKeyboard>();
+
+            foreach (object inputConfig in Hid.InputConfig.Value)
+            {
+                if (inputConfig is NpadController controllerConfig)
+                {
+                    controllerConfigList.Add(controllerConfig);
+                }
+                else if (inputConfig is NpadKeyboard keyboardConfig)
+                {
+                    keyboardConfigList.Add(keyboardConfig);
+                }
+            }
+
             ConfigurationFileFormat configurationFile = new ConfigurationFileFormat
             {
                 Version                   = 2,
@@ -318,8 +327,8 @@ namespace Ryujinx.Configuration
                 EnableCustomTheme         = Ui.EnableCustomTheme,
                 CustomThemePath           = Ui.CustomThemePath,
                 EnableKeyboard            = Hid.EnableKeyboard,
-                KeyboardConfig            = Hid.KeyboardConfig,
-                JoystickConfig            = Hid.JoystickConfig
+                KeyboardConfig            = keyboardConfigList,
+                JoystickConfig            = controllerConfigList
             };
 
             return configurationFile;
@@ -360,13 +369,13 @@ namespace Ryujinx.Configuration
             Ui.CustomThemePath.Value               = "";
             Hid.EnableKeyboard.Value               = false;
 
-            Hid.KeyboardConfig.Value = new List<NpadKeyboard>
+            Hid.InputConfig.Value = new List<object>
             {
                 new NpadKeyboard
                 {
                     Index          = 0,
-                    ControllerType = ControllerType.Handheld,
-                    ControllerId   = ControllerId.ControllerHandheld,
+                    ControllerType = ControllerType.NpadPair,
+                    ControllerId   = ControllerId.ControllerPlayer1,
                     LeftJoycon     = new NpadKeyboardLeft
                     {
                         StickUp     = Key.W,
@@ -405,45 +414,6 @@ namespace Ryujinx.Configuration
                     }
                 }
             };
-
-            Hid.JoystickConfig.Value = new List<NpadController>
-            {
-                new NpadController
-                {
-                    Index            = 0,
-                    ControllerType   = ControllerType.ProController,
-                    ControllerId     = ControllerId.ControllerPlayer1,
-                    DeadzoneLeft     = 0.05f,
-                    DeadzoneRight    = 0.05f,
-                    TriggerThreshold = 0.5f,
-                    LeftJoycon       = new NpadControllerLeft
-                    {
-                        StickX      = ControllerInputId.Axis0,
-                        StickY      = ControllerInputId.Axis1,
-                        StickButton = ControllerInputId.Button8,
-                        DPadUp      = ControllerInputId.Hat0Up,
-                        DPadDown    = ControllerInputId.Hat0Down,
-                        DPadLeft    = ControllerInputId.Hat0Left,
-                        DPadRight   = ControllerInputId.Hat0Right,
-                        ButtonMinus = ControllerInputId.Button6,
-                        ButtonL     = ControllerInputId.Button4,
-                        ButtonZl    = ControllerInputId.Axis2,
-                    },
-                    RightJoycon      = new NpadControllerRight
-                    {
-                        StickX      = ControllerInputId.Axis3,
-                        StickY      = ControllerInputId.Axis4,
-                        StickButton = ControllerInputId.Button9,
-                        ButtonA     = ControllerInputId.Button1,
-                        ButtonB     = ControllerInputId.Button0,
-                        ButtonX     = ControllerInputId.Button3,
-                        ButtonY     = ControllerInputId.Button2,
-                        ButtonPlus  = ControllerInputId.Button7,
-                        ButtonR     = ControllerInputId.Button5,
-                        ButtonZr    = ControllerInputId.Axis5,
-                    }
-                }
-            };
         }
 
         public void Load(ConfigurationFileFormat configurationFileFormat)
@@ -455,6 +425,16 @@ namespace Ryujinx.Configuration
                 LoadDefault();
 
                 return;
+            }
+
+            List<object> inputConfig = new List<object>();
+            foreach (NpadController controllerConfig in configurationFileFormat.JoystickConfig)
+            {
+                inputConfig.Add(controllerConfig);
+            }
+            foreach (NpadKeyboard keyboardConfig in configurationFileFormat.KeyboardConfig)
+            {
+                inputConfig.Add(keyboardConfig);
             }
 
             Graphics.ShadersDumpPath.Value         = configurationFileFormat.GraphicsShadersDumpPath;
@@ -490,8 +470,7 @@ namespace Ryujinx.Configuration
             Ui.EnableCustomTheme.Value             = configurationFileFormat.EnableCustomTheme;
             Ui.CustomThemePath.Value               = configurationFileFormat.CustomThemePath;
             Hid.EnableKeyboard.Value               = configurationFileFormat.EnableKeyboard;
-            Hid.KeyboardConfig.Value               = configurationFileFormat.KeyboardConfig;
-            Hid.JoystickConfig.Value               = configurationFileFormat.JoystickConfig;
+            Hid.InputConfig.Value                  = inputConfig;
         }
 
         public static void Initialize()

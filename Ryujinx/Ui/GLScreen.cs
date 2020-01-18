@@ -2,6 +2,7 @@ using OpenTK;
 using OpenTK.Graphics;
 using OpenTK.Input;
 using Ryujinx.Configuration;
+using Ryujinx.Common.Configuration.Hid;
 using Ryujinx.Graphics.OpenGL;
 using Ryujinx.HLE;
 using Ryujinx.HLE.Input;
@@ -52,7 +53,7 @@ namespace Ryujinx.Ui
 
             _renderer = (Renderer)device.Gpu.Renderer;
 
-            _prevHotkeyButtons = new HotkeyButtons[ConfigurationState.Instance.Hid.KeyboardConfig.Value.Count];
+            _prevHotkeyButtons = new HotkeyButtons[ConfigurationState.Instance.Hid.InputConfig.Value.Count];
 
             Location = new Point(
                 (DisplayDevice.Default.Width  / 2) - (Width  / 2),
@@ -142,116 +143,91 @@ namespace Ryujinx.Ui
 
         private new void UpdateFrame()
         {
-            int numKeyboards   = ConfigurationState.Instance.Hid.KeyboardConfig.Value.Count;
-            int numControllers = ConfigurationState.Instance.Hid.JoystickConfig.Value.Count;
+            int numControllers = ConfigurationState.Instance.Hid.InputConfig.Value.Count;
 
-            HotkeyButtons[]     currentHotkeyButtons  = new HotkeyButtons[numKeyboards];
-            ControllerButtons[] currentButtonKeyboard = new ControllerButtons[numKeyboards];
-            JoystickPosition[]  leftJoystickKeyboard  = new JoystickPosition[numKeyboards];
-            JoystickPosition[]  rightJoystickKeyboard = new JoystickPosition[numKeyboards];
+            HotkeyButtons[] currentHotkeyButtons = new HotkeyButtons[numControllers];
+            ControllerButtons[] currentButton    = new ControllerButtons[numControllers];
+            JoystickPosition[]  leftJoystick     = new JoystickPosition[numControllers];
+            JoystickPosition[]  rightJoystick    = new JoystickPosition[numControllers];
+            HLE.Input.Keyboard?[] hidKeyboard    = new HLE.Input.Keyboard?[numControllers];
 
-            ControllerButtons[] currentButtonController = new ControllerButtons[numControllers];
-            JoystickPosition[]  leftJoystickController  = new JoystickPosition[numControllers];
-            JoystickPosition[]  rightJoystickController = new JoystickPosition[numControllers];
+            int[] leftJoystickDx  = new int[numControllers];
+            int[] leftJoystickDy  = new int[numControllers];
+            int[] rightJoystickDx = new int[numControllers];
+            int[] rightJoystickDy = new int[numControllers];
 
-            HLE.Input.Keyboard?[] hidKeyboard = new HLE.Input.Keyboard?[numKeyboards];
-
-            int[] leftJoystickDxKeyboard  = new int[numKeyboards];
-            int[] leftJoystickDyKeyboard  = new int[numKeyboards];
-            int[] rightJoystickDxKeyboard = new int[numKeyboards];
-            int[] rightJoystickDyKeyboard = new int[numKeyboards];
-
-            int[] leftJoystickDxController  = new int[numControllers];
-            int[] leftJoystickDyController  = new int[numControllers];
-            int[] rightJoystickDxController = new int[numControllers];
-            int[] rightJoystickDyController = new int[numControllers];
-
-            // Keyboard Input
-            for (int i = 0; i < numKeyboards; i++)
-            {
-                KeyboardController keyboardInput = new KeyboardController(ConfigurationState.Instance.Hid.KeyboardConfig.Value[i]);
-
-                if (_keyboard.HasValue)
-                {
-                    KeyboardState keyboard = _keyboard.Value;
-
-                    currentHotkeyButtons[i]  = keyboardInput.GetHotkeyButtons(keyboard);
-                    currentButtonKeyboard[i] = keyboardInput.GetButtons(keyboard);
-
-                    if (ConfigurationState.Instance.Hid.EnableKeyboard)
-                    {
-                        hidKeyboard[i] = keyboardInput.GetKeysDown(keyboard);
-                    }
-
-                    (leftJoystickDxKeyboard[i],  leftJoystickDyKeyboard[i])  = keyboardInput.GetLeftStick(keyboard);
-                    (rightJoystickDxKeyboard[i], rightJoystickDyKeyboard[i]) = keyboardInput.GetRightStick(keyboard);
-                }
-
-                if (!hidKeyboard[i].HasValue)
-                {
-                    hidKeyboard[i] = new HLE.Input.Keyboard
-                    {
-                        Modifier = 0,
-                        Keys = new int[0x8]
-                    };
-                }
-
-                leftJoystickKeyboard[i] = new JoystickPosition
-                {
-                    Dx = leftJoystickDxKeyboard[i],
-                    Dy = leftJoystickDyKeyboard[i]
-                };
-
-                rightJoystickKeyboard[i] = new JoystickPosition
-                {
-                    Dx = rightJoystickDxKeyboard[i],
-                    Dy = rightJoystickDyKeyboard[i]
-                };
-
-                currentButtonKeyboard[i] |= _device.Hid.UpdateStickButtons(leftJoystickKeyboard[i], rightJoystickKeyboard[i]);
-
-                _device.Hid.KeyboardControllers[i].SendInput(currentButtonKeyboard[i], leftJoystickKeyboard[i], rightJoystickKeyboard[i]);
-
-                if (ConfigurationState.Instance.Hid.EnableKeyboard && hidKeyboard[i].HasValue)
-                {
-                    _device.Hid.WriteKeyboard(hidKeyboard[i].Value);
-                }
-
-                // Toggle vsync
-                if (currentHotkeyButtons[i].HasFlag(HotkeyButtons.ToggleVSync) &&
-                    !_prevHotkeyButtons[i].HasFlag(HotkeyButtons.ToggleVSync))
-                {
-                    _device.EnableDeviceVsync = !_device.EnableDeviceVsync;
-                }
-
-                _prevHotkeyButtons[i] = currentHotkeyButtons[i];
-            }
-            
-            // Controller Input
             for (int i = 0; i < numControllers; i++)
             {
-                PhysicalController controllerInput = new PhysicalController(ConfigurationState.Instance.Hid.JoystickConfig.Value[i]);
-
-                currentButtonController[i] |= controllerInput.GetButtons();
-
-                (leftJoystickDxController[i],  leftJoystickDyController[i])  = controllerInput.GetLeftStick();
-                (rightJoystickDxController[i], rightJoystickDyController[i]) = controllerInput.GetRightStick();
-
-                leftJoystickController[i] = new JoystickPosition
+                if (ConfigurationState.Instance.Hid.InputConfig.Value[i] is NpadKeyboard keyboardController)
                 {
-                    Dx = leftJoystickDxController[i],
-                    Dy = leftJoystickDyController[i]
+                    // Keyboard Input
+                    KeyboardController keyboardInput = new KeyboardController(keyboardController);
+
+                    if (_keyboard.HasValue)
+                    {
+                        KeyboardState keyboard = _keyboard.Value;
+
+                        currentHotkeyButtons[i] = keyboardInput.GetHotkeyButtons(keyboard);
+                        currentButton[i]        = keyboardInput.GetButtons(keyboard);
+
+                        if (ConfigurationState.Instance.Hid.EnableKeyboard)
+                        {
+                            hidKeyboard[i] = keyboardInput.GetKeysDown(keyboard);
+                        }
+
+                        (leftJoystickDx[i],  leftJoystickDy[i])  = keyboardInput.GetLeftStick(keyboard);
+                        (rightJoystickDx[i], rightJoystickDy[i]) = keyboardInput.GetRightStick(keyboard);
+                    }
+
+                    if (hidKeyboard[i] == null)
+                    {
+                        hidKeyboard[i] = new HLE.Input.Keyboard
+                        {
+                            Modifier = 0,
+                            Keys     = new int[0x8]
+                        };
+                    }
+
+                    if (ConfigurationState.Instance.Hid.EnableKeyboard && hidKeyboard[i] != null)
+                    {
+                        _device.Hid.WriteKeyboard(hidKeyboard[i].Value);
+                    }
+
+                    // Toggle vsync
+                    if (currentHotkeyButtons[i].HasFlag(HotkeyButtons.ToggleVSync) &&
+                        !_prevHotkeyButtons[i].HasFlag(HotkeyButtons.ToggleVSync))
+                    {
+                        _device.EnableDeviceVsync = !_device.EnableDeviceVsync;
+                    }
+
+                    _prevHotkeyButtons[i] = currentHotkeyButtons[i];
+                }
+                else if (ConfigurationState.Instance.Hid.InputConfig.Value[i] is Common.Configuration.Hid.NpadController joystickController)
+                {
+                    // Controller Input
+                    JoystickController controllerInput = new JoystickController(joystickController);
+
+                    currentButton[i] |= controllerInput.GetButtons();
+
+                    (leftJoystickDx[i],  leftJoystickDy[i])  = controllerInput.GetLeftStick();
+                    (rightJoystickDx[i], rightJoystickDy[i]) = controllerInput.GetRightStick();
+                }
+
+                leftJoystick[i] = new JoystickPosition
+                {
+                    Dx = leftJoystickDx[i],
+                    Dy = leftJoystickDy[i]
                 };
 
-                rightJoystickController[i] = new JoystickPosition
+                rightJoystick[i] = new JoystickPosition
                 {
-                    Dx = rightJoystickDxController[i],
-                    Dy = rightJoystickDyController[i]
+                    Dx = rightJoystickDx[i],
+                    Dy = rightJoystickDy[i]
                 };
 
-                currentButtonController[i] |= _device.Hid.UpdateStickButtons(leftJoystickController[i], rightJoystickController[i]);
+                currentButton[i] |= _device.Hid.UpdateStickButtons(leftJoystick[i], rightJoystick[i]);
 
-                _device.Hid.Controllers[i].SendInput(currentButtonController[i], leftJoystickController[i], rightJoystickController[i]);
+                _device.Hid.Controllers[i].SendInput(currentButton[i], leftJoystick[i], rightJoystick[i]);
             }
 
             //Touchscreen

@@ -8,13 +8,13 @@ using NpadController = Ryujinx.Common.Configuration.Hid.NpadController;
 
 namespace Ryujinx.Ui
 {
-    public class PhysicalController
+    public class JoystickController
     {
         private NpadController _inner;
 
         // NOTE: This should be initialized AFTER GTK for compat reasons with OpenTK SDL2 backend and GTK on Linux.
         // BODY: Usage of Joystick.GetState must be defer to after GTK full initialization. Otherwise, GTK will segfault because SDL2 was already init *sighs*
-        public PhysicalController(NpadController inner)
+        public JoystickController(NpadController inner)
         {
             _inner = inner;
         }

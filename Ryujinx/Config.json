@@ -37,13 +37,13 @@
     "keyboard_config": [
         {
             "index": 0,
-            "controller_type": "Handheld",
-            "controller_id": "ControllerHandheld",
+            "controller_type": "NpadPair",
+            "controller_id": "ControllerPlayer1",
             "left_joycon": {
                 "stick_up": "W",
                 "stick_down": "S",
                 "stick_left": "A",
-                 "stick_right": "D",
+                "stick_right": "D",
                 "stick_button": "F",
                 "dpad_up": "Up",
                 "dpad_down": "Down",
@@ -74,40 +74,5 @@
             }
         }
     ],
-    "joystick_config": [
-        {
-            "index": 0,
-            "controller_type": "ProController",
-            "controller_id": "ControllerPlayer1",
-            "deadzone_left": 0.05,
-            "deadzone_right": 0.05,
-            "trigger_threshold": 0.5,
-            "left_joycon": {
-                "stick_x": "Axis0",
-                "stick_y": "Axis1",
-                "stick_button": "Button8",
-                "button_minus": "Button6",
-                "button_l": "Button4",
-                "button_zl": "Axis2",
-                "button_sl": "Button10",
-                "dpad_up": "Hat0Up",
-                "dpad_down": "Hat0Down",
-                "dpad_left": "Hat0Left",
-                "dpad_right": "Hat0Right"
-            },
-            "right_joycon": {
-                "stick_x": "Axis3",
-                "stick_y": "Axis4",
-                "stick_button": "Button9",
-                "button_a": "Button1",
-                "button_b": "Button0",
-                "button_x": "Button3",
-                "button_y": "Button2",
-                "button_plus": "Button7",
-                "button_r": "Button5",
-                "button_zr": "Axis5",
-                "button_sr": "Button11"
-            }
-        }
-    ]
+    "joystick_config": []
 }

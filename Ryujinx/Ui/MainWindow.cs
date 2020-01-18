@@ -376,14 +376,16 @@ namespace Ryujinx.Ui
 
         private void CreateGameWindow(HLE.Switch device)
         {
-            foreach (NpadController controller in ConfigurationState.Instance.Hid.JoystickConfig.Value)
+            foreach (object controllerObject in ConfigurationState.Instance.Hid.InputConfig.Value)
             {
-                device.Hid.InitializeController(controller.ControllerId, controller.ControllerType);
-            }
-
-            foreach (NpadKeyboard keyboard in ConfigurationState.Instance.Hid.KeyboardConfig.Value)
-            {
-                device.Hid.InitializeController(keyboard.ControllerId, keyboard.ControllerType, true);
+                if (controllerObject is NpadKeyboard keyboard)
+                {
+                    device.Hid.InitializeController(keyboard.ControllerId, keyboard.ControllerType);
+                }
+                else if (controllerObject is NpadController controller)
+                {
+                    device.Hid.InitializeController(controller.ControllerId, controller.ControllerType);
+                }
             }
 
             using (_screen = new GlScreen(device))

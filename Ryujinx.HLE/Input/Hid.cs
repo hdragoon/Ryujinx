@@ -18,8 +18,7 @@ namespace Ryujinx.HLE.Input
         private KeyboardHeader _currentKeyboardHeader;
         private KeyboardEntry  _currentKeyboardEntry;
 
-        public List<BaseController> Controllers         = new List<BaseController>();
-        public List<BaseController> KeyboardControllers = new List<BaseController>();
+        public List<BaseController> Controllers = new List<BaseController>();
 
         internal long HidPosition;
 
@@ -64,7 +63,7 @@ namespace Ryujinx.HLE.Input
             }
         }
 
-        public void InitializeController(ControllerId controllerId, ControllerType controllerType, bool isKeyboard = false)
+        public void InitializeController(ControllerId controllerId, ControllerType controllerType)
         {
             BaseController controller;
 
@@ -82,10 +81,7 @@ namespace Ryujinx.HLE.Input
 
             controller.Connect(controllerId);
 
-            if (isKeyboard) 
-                KeyboardControllers.Add(controller);
-            else 
-                Controllers.Add(controller);
+            Controllers.Add(controller);
         }
 
         public ControllerButtons UpdateStickButtons(
