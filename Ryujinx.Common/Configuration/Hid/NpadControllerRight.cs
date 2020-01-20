@@ -12,6 +12,7 @@
         public ControllerInputId ButtonPlus;
         public ControllerInputId ButtonR;
         public ControllerInputId ButtonZr;
+        public ControllerInputId ButtonSl;
         public ControllerInputId ButtonSr;
     }
 }

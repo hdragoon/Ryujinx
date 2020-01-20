@@ -145,11 +145,11 @@ namespace Ryujinx.Ui
         {
             int numControllers = ConfigurationState.Instance.Hid.InputConfig.Value.Count;
 
-            HotkeyButtons[] currentHotkeyButtons = new HotkeyButtons[numControllers];
-            ControllerButtons[]   currentButton  = new ControllerButtons[numControllers];
-            JoystickPosition[]    leftJoystick   = new JoystickPosition[numControllers];
-            JoystickPosition[]    rightJoystick  = new JoystickPosition[numControllers];
-            HLE.Input.Keyboard?[] hidKeyboard    = new HLE.Input.Keyboard?[numControllers];
+            HotkeyButtons[]       currentHotkeyButtons = new HotkeyButtons[numControllers];
+            ControllerButtons[]   currentButton        = new ControllerButtons[numControllers];
+            JoystickPosition[]    leftJoystick         = new JoystickPosition[numControllers];
+            JoystickPosition[]    rightJoystick        = new JoystickPosition[numControllers];
+            HLE.Input.Keyboard?[] hidKeyboard          = new HLE.Input.Keyboard?[numControllers];
 
             int[] leftJoystickDx  = new int[numControllers];
             int[] leftJoystickDy  = new int[numControllers];

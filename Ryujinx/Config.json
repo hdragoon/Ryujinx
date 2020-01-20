@@ -52,7 +52,8 @@
                 "button_minus": "Minus",
                 "button_l": "E",
                 "button_zl": "Q",
-                "button_sl": "R"
+                "button_sl": "Home",
+                "button_sr": "End"
             },
             "right_joycon": {
                 "stick_up": "I",
@@ -67,7 +68,8 @@
                 "button_plus": "Plus",
                 "button_r": "U",
                 "button_zr": "O",
-                "button_sr": "Y"
+                "button_sl": "PageUp",
+                "button_sr": "PageDown"
             },
             "hotkeys": {
                 "toggle_vsync": "Tab"

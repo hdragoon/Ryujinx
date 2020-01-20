@@ -44,6 +44,7 @@ namespace Ryujinx.Ui
             if (IsActivated(joystickState, _inner.LeftJoycon.ButtonL))      buttons |= ControllerButtons.L;
             if (IsActivated(joystickState, _inner.LeftJoycon.ButtonZl))     buttons |= ControllerButtons.Zl;
             if (IsActivated(joystickState, _inner.LeftJoycon.ButtonSl))     buttons |= ControllerButtons.Sl;
+            if (IsActivated(joystickState, _inner.LeftJoycon.ButtonSr))     buttons |= ControllerButtons.Sr;
 
             if (IsActivated(joystickState, _inner.RightJoycon.ButtonA))     buttons |= ControllerButtons.A;
             if (IsActivated(joystickState, _inner.RightJoycon.ButtonB))     buttons |= ControllerButtons.B;
@@ -53,6 +54,7 @@ namespace Ryujinx.Ui
             if (IsActivated(joystickState, _inner.RightJoycon.ButtonPlus))  buttons |= ControllerButtons.Plus;
             if (IsActivated(joystickState, _inner.RightJoycon.ButtonR))     buttons |= ControllerButtons.R;
             if (IsActivated(joystickState, _inner.RightJoycon.ButtonZr))    buttons |= ControllerButtons.Zr;
+            if (IsActivated(joystickState, _inner.RightJoycon.ButtonSl))    buttons |= ControllerButtons.Sl;
             if (IsActivated(joystickState, _inner.RightJoycon.ButtonSr))    buttons |= ControllerButtons.Sr;
 
             return buttons;

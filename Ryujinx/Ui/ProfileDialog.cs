@@ -34,12 +34,16 @@ namespace Ryujinx.Ui
 
             foreach (char invalidChar in System.IO.Path.GetInvalidFileNameChars())
             {
-                if (_profileEntry.Text.Contains(invalidChar)) validFileName = false;
+                if (_profileEntry.Text.Contains(invalidChar))
+                {
+                    validFileName = false;
+                }
             }
 
             if (validFileName && !string.IsNullOrEmpty(_profileEntry.Text))
             {
                 FileName = $"{_profileEntry.Text}.json";
+
                 Respond(ResponseType.Ok);
             }
             else

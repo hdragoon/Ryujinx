@@ -25,6 +25,7 @@ namespace Ryujinx.Ui
         private static object       _inputConfig;
         private static Gdk.Key?     _pressedKey;
         private static bool         _isWaitingForInput;
+
         private static IJsonFormatterResolver _resolver;
 
 #pragma warning disable CS0649
@@ -42,7 +43,8 @@ namespace Ryujinx.Ui
         [GUI] Grid         _rightStickKeyboard;
         [GUI] Grid         _rightStickController;
         [GUI] Box          _deadZoneRightBox;
-        [GUI] Grid         _sideTriggerBox;
+        [GUI] Grid         _leftSideTriggerBox;
+        [GUI] Grid         _rightSideTriggerBox;
         [GUI] Box          _triggerThresholdBox;
         [GUI] ComboBoxText _controllerType;
         [GUI] ToggleButton _lStickX;
@@ -73,8 +75,10 @@ namespace Ryujinx.Ui
         [GUI] ToggleButton _plus;
         [GUI] ToggleButton _r;
         [GUI] ToggleButton _zR;
-        [GUI] ToggleButton _sL;
-        [GUI] ToggleButton _sR;
+        [GUI] ToggleButton _lSl;
+        [GUI] ToggleButton _lSr;
+        [GUI] ToggleButton _rSl;
+        [GUI] ToggleButton _rSr;
         [GUI] Image        _controllerImage;
 #pragma warning restore CS0649
 #pragma warning restore IDE0044
@@ -85,17 +89,26 @@ namespace Ryujinx.Ui
         {
             builder.Autoconnect(this);
 
+            this.Icon = new Gdk.Pixbuf(Assembly.GetExecutingAssembly(), "Ryujinx.Ui.assets.Icon.png");
+
             _controllerId = controllerId;
-            this.Icon     = new Gdk.Pixbuf(Assembly.GetExecutingAssembly(), "Ryujinx.Ui.assets.Icon.png");
-            _inputConfig  = ConfigurationState.Instance.Hid.InputConfig.Value.Find(inputConfig =>
+
+            _inputConfig = ConfigurationState.Instance.Hid.InputConfig.Value.Find(inputConfig =>
             {
-                if (inputConfig is NpadController controllerConfig) 
+                if (inputConfig is NpadController controllerConfig)
+                {
                     return controllerConfig.ControllerId == _controllerId;
+                }
                 else if (inputConfig is NpadKeyboard keyboardConfig)
+                {
                     return keyboardConfig.ControllerId == _controllerId;
-                else 
+                }
+                else
+                {
                     return false;
+                }
             });
+
             _resolver = CompositeResolver.Create(
                 new[] { new ConfigurationFileFormat.ConfigurationEnumFormatter<Key>() },
                 new[] { StandardResolver.AllowPrivateSnakeCase }
@@ -116,7 +129,8 @@ namespace Ryujinx.Ui
             _minus.Clicked          += Button_Pressed;
             _l.Clicked              += Button_Pressed;
             _zL.Clicked             += Button_Pressed;
-            _sL.Clicked             += Button_Pressed;
+            _lSl.Clicked            += Button_Pressed;
+            _lSr.Clicked            += Button_Pressed;
             _rStickX.Clicked        += Button_Pressed;
             _rStickY.Clicked        += Button_Pressed;
             _rStickUp.Clicked       += Button_Pressed;
@@ -131,7 +145,8 @@ namespace Ryujinx.Ui
             _plus.Clicked           += Button_Pressed;
             _r.Clicked              += Button_Pressed;
             _zR.Clicked             += Button_Pressed;
-            _sR.Clicked             += Button_Pressed;
+            _rSl.Clicked            += Button_Pressed;
+            _rSr.Clicked            += Button_Pressed;
 
             // Setup current values
             UpdateInputDeviceList();
@@ -216,13 +231,16 @@ namespace Ryujinx.Ui
 
         private void SetControllerSpecificFields()
         {
-            if (_controllerType.ActiveId == "NpadLeft" || _controllerType.ActiveId == "NpadRight")
+            _leftSideTriggerBox.Hide();
+            _rightSideTriggerBox.Hide();
+
+            if (_controllerType.ActiveId == "NpadLeft")
             {
-                _sideTriggerBox.Show();
+                _leftSideTriggerBox.Show();
             }
-            else
+            else if (_controllerType.ActiveId == "NpadRight")
             {
-                _sideTriggerBox.Hide();
+                _rightSideTriggerBox.Show();
             }
 
             switch (_controllerType.ActiveId)
@@ -258,7 +276,8 @@ namespace Ryujinx.Ui
             _minus.Label                      = "";
             _l.Label                          = "";
             _zL.Label                         = "";
-            _sL.Label                         = "";
+            _lSl.Label                        = "";
+            _lSr.Label                        = "";
             _rStickUp.Label                   = "";
             _rStickDown.Label                 = "";
             _rStickLeft.Label                 = "";
@@ -271,7 +290,8 @@ namespace Ryujinx.Ui
             _plus.Label                       = "";
             _r.Label                          = "";
             _zR.Label                         = "";
-            _sR.Label                         = "";
+            _rSl.Label                        = "";
+            _rSr.Label                        = "";
             _controllerDeadzoneLeft.Value     = 0;
             _controllerDeadzoneRight.Value    = 0;
             _controllerTriggerThreshold.Value = 0;
@@ -281,8 +301,10 @@ namespace Ryujinx.Ui
         {
             if (config is NpadKeyboard keyboardConfig)
             {
-                if (!_inputDevice.ActiveId.StartsWith("keyboard")) 
+                if (!_inputDevice.ActiveId.StartsWith("keyboard"))
+                {
                     _inputDevice.SetActiveId($"keyboard/{keyboardConfig.Index}");
+                }
                 
                 _controllerType.SetActiveId(keyboardConfig.ControllerType.ToString());
 
@@ -298,7 +320,8 @@ namespace Ryujinx.Ui
                 _minus.Label        = keyboardConfig.LeftJoycon.ButtonMinus.ToString();
                 _l.Label            = keyboardConfig.LeftJoycon.ButtonL.ToString();
                 _zL.Label           = keyboardConfig.LeftJoycon.ButtonZl.ToString();
-                _sL.Label           = keyboardConfig.LeftJoycon.ButtonSl.ToString();
+                _lSl.Label          = keyboardConfig.LeftJoycon.ButtonSl.ToString();
+                _lSr.Label          = keyboardConfig.LeftJoycon.ButtonSr.ToString();
                 _rStickUp.Label     = keyboardConfig.RightJoycon.StickUp.ToString();
                 _rStickDown.Label   = keyboardConfig.RightJoycon.StickDown.ToString();
                 _rStickLeft.Label   = keyboardConfig.RightJoycon.StickLeft.ToString();
@@ -311,12 +334,15 @@ namespace Ryujinx.Ui
                 _plus.Label         = keyboardConfig.RightJoycon.ButtonPlus.ToString();
                 _r.Label            = keyboardConfig.RightJoycon.ButtonR.ToString();
                 _zR.Label           = keyboardConfig.RightJoycon.ButtonZr.ToString();
-                _sR.Label           = keyboardConfig.RightJoycon.ButtonSr.ToString();
+                _rSl.Label          = keyboardConfig.RightJoycon.ButtonSl.ToString();
+                _rSr.Label          = keyboardConfig.RightJoycon.ButtonSr.ToString();
             }
             else if (config is NpadController controllerConfig)
             {
                 if (!_inputDevice.ActiveId.StartsWith("controller"))
+                {
                     _inputDevice.SetActiveId($"controller/{controllerConfig.Index}");
+                }
 
                 _controllerType.SetActiveId(controllerConfig.ControllerType.ToString());
 
@@ -330,7 +356,8 @@ namespace Ryujinx.Ui
                 _minus.Label                      = controllerConfig.LeftJoycon.ButtonMinus.ToString();
                 _l.Label                          = controllerConfig.LeftJoycon.ButtonL.ToString();
                 _zL.Label                         = controllerConfig.LeftJoycon.ButtonZl.ToString();
-                _sL.Label                         = controllerConfig.LeftJoycon.ButtonSl.ToString();
+                _lSl.Label                        = controllerConfig.LeftJoycon.ButtonSl.ToString();
+                _lSr.Label                        = controllerConfig.LeftJoycon.ButtonSr.ToString();
                 _rStickX.Label                    = controllerConfig.RightJoycon.StickX.ToString();
                 _rStickY.Label                    = controllerConfig.RightJoycon.StickY.ToString();
                 _rStickButton.Label               = controllerConfig.RightJoycon.StickButton.ToString();
@@ -341,7 +368,8 @@ namespace Ryujinx.Ui
                 _plus.Label                       = controllerConfig.RightJoycon.ButtonPlus.ToString();
                 _r.Label                          = controllerConfig.RightJoycon.ButtonR.ToString();
                 _zR.Label                         = controllerConfig.RightJoycon.ButtonZr.ToString();
-                _sR.Label                         = controllerConfig.RightJoycon.ButtonSr.ToString();
+                _rSl.Label                        = controllerConfig.RightJoycon.ButtonSl.ToString();
+                _rSr.Label                        = controllerConfig.RightJoycon.ButtonSr.ToString();
                 _controllerDeadzoneLeft.Value     = controllerConfig.DeadzoneLeft;
                 _controllerDeadzoneRight.Value    = controllerConfig.DeadzoneRight;
                 _controllerTriggerThreshold.Value = controllerConfig.TriggerThreshold;
@@ -373,7 +401,8 @@ namespace Ryujinx.Ui
                             ButtonMinus = Enum.Parse<Key>(_minus.Label),
                             ButtonL     = Enum.Parse<Key>(_l.Label),
                             ButtonZl    = Enum.Parse<Key>(_zL.Label),
-                            ButtonSl    = Enum.Parse<Key>(_sL.Label)
+                            ButtonSl    = Enum.Parse<Key>(_lSl.Label),
+                            ButtonSr    = Enum.Parse<Key>(_lSr.Label)
                         },
                         RightJoycon    = new NpadKeyboardRight
                         {
@@ -389,9 +418,10 @@ namespace Ryujinx.Ui
                             ButtonPlus  = Enum.Parse<Key>(_plus.Label),
                             ButtonR     = Enum.Parse<Key>(_r.Label),
                             ButtonZr    = Enum.Parse<Key>(_zR.Label),
-                            ButtonSr    = Enum.Parse<Key>(_sR.Label)
+                            ButtonSl    = Enum.Parse<Key>(_rSl.Label),
+                            ButtonSr    = Enum.Parse<Key>(_rSr.Label)
                         },
-                        Hotkeys = new KeyboardHotkeys
+                        Hotkeys        = new KeyboardHotkeys
                         {
                             ToggleVsync = Key.Tab //TODO: Make this an option in the GUI
                         }
@@ -423,7 +453,8 @@ namespace Ryujinx.Ui
                             ButtonMinus = Enum.Parse<ControllerInputId>(_minus.Label),
                             ButtonL     = Enum.Parse<ControllerInputId>(_l.Label),
                             ButtonZl    = Enum.Parse<ControllerInputId>(_zL.Label),
-                            ButtonSl    = Enum.Parse<ControllerInputId>(_sL.Label)
+                            ButtonSl    = Enum.Parse<ControllerInputId>(_lSl.Label),
+                            ButtonSr    = Enum.Parse<ControllerInputId>(_lSr.Label)
                         },
                         RightJoycon      = new NpadControllerRight
                         {
@@ -437,7 +468,8 @@ namespace Ryujinx.Ui
                             ButtonPlus  = Enum.Parse<ControllerInputId>(_plus.Label),
                             ButtonR     = Enum.Parse<ControllerInputId>(_r.Label),
                             ButtonZr    = Enum.Parse<ControllerInputId>(_zR.Label),
-                            ButtonSr    = Enum.Parse<ControllerInputId>(_sR.Label)
+                            ButtonSl    = Enum.Parse<ControllerInputId>(_rSl.Label),
+                            ButtonSr    = Enum.Parse<ControllerInputId>(_rSr.Label)
                         }
                     };
                 }
@@ -445,6 +477,7 @@ namespace Ryujinx.Ui
             }
 
             GtkDialog.CreateErrorDialog("Some fields entered where invalid and therefore your config was not saved.");
+
             return null;
         }
 
@@ -457,17 +490,19 @@ namespace Ryujinx.Ui
                 if (keyboardState.IsKeyDown((OpenTK.Input.Key)key))
                 {
                     pressedKey = key;
+
                     return true;
                 }
             }
 
             pressedKey = default;
+
             return false;
         }
 
         private static bool IsAnyButtonPressed(int index, double triggerThreshold, out ControllerInputId pressedButton)
         {
-            JoystickState joystickState               = Joystick.GetState(index);
+            JoystickState        joystickState        = Joystick.GetState(index);
             JoystickCapabilities joystickCapabilities = Joystick.GetCapabilities(index);
 
             //Buttons
@@ -476,6 +511,7 @@ namespace Ryujinx.Ui
                 if (joystickState.IsButtonDown(i))
                 {
                     Enum.TryParse($"Button{i}", out pressedButton);
+
                     return true;
                 }
             }
@@ -486,6 +522,7 @@ namespace Ryujinx.Ui
                 if (joystickState.GetAxis(i) > triggerThreshold)
                 {
                     Enum.TryParse($"Axis{i}", out pressedButton);
+
                     return true;
                 }
             }
@@ -503,10 +540,12 @@ namespace Ryujinx.Ui
                 if (pos == null)      continue;
 
                 Enum.TryParse($"Hat{i}{pos}", out pressedButton);
+
                 return true;
             }
 
-            pressedButton = ControllerInputId.Button0;
+            pressedButton = default;
+
             return false;
         }
 
@@ -537,8 +576,11 @@ namespace Ryujinx.Ui
         //TODO: Replace events with polling when the keyboard API is implemented in OpenTK.
         private void Button_Pressed(object sender, EventArgs args)
         {
-            if (_isWaitingForInput) 
+            if (_isWaitingForInput)
+            {
                 return;
+            }
+
             _isWaitingForInput = true;
 
             Thread inputThread = new Thread(() =>
@@ -557,8 +599,10 @@ namespace Ryujinx.Ui
                                 button.SetStateFlags(0, true);
                                 KeyPressEvent -= Key_Pressed;
                             });
+
                             _pressedKey        = null;
                             _isWaitingForInput = false;
+
                             return;
                         }
                     }
@@ -600,8 +644,10 @@ namespace Ryujinx.Ui
                                 button.SetStateFlags(0, true);
                                 KeyPressEvent -= Key_Pressed;
                             });
+
                             _pressedKey        = null;
                             _isWaitingForInput = false;
+
                             return;
                         }
                     }
@@ -646,7 +692,7 @@ namespace Ryujinx.Ui
             if (_inputDevice.ActiveId == "disabled" || _profile.ActiveId == null) return;
 
             object config = null;
-            int pos       = _profile.Active;
+            int    pos    = _profile.Active;
 
             if (_profile.ActiveId == "default")
             {
@@ -671,7 +717,8 @@ namespace Ryujinx.Ui
                             ButtonMinus = Key.Minus,
                             ButtonL     = Key.E,
                             ButtonZl    = Key.Q,
-                            ButtonSl    = Key.R,
+                            ButtonSl    = Key.Home,
+                            ButtonSr    = Key.End
                         },
                         RightJoycon    = new NpadKeyboardRight
                         {
@@ -687,7 +734,8 @@ namespace Ryujinx.Ui
                             ButtonPlus  = Key.Plus,
                             ButtonR     = Key.U,
                             ButtonZr    = Key.O,
-                            ButtonSr    = Key.Y,
+                            ButtonSl    = Key.PageUp,
+                            ButtonSr    = Key.PageDown
                         },
                         Hotkeys        = new KeyboardHotkeys
                         {
@@ -707,8 +755,8 @@ namespace Ryujinx.Ui
                         TriggerThreshold = 0.5f,
                         LeftJoycon       = new NpadControllerLeft
                         {
-                            StickX = ControllerInputId.Axis0,
-                            StickY = ControllerInputId.Axis1,
+                            StickX      = ControllerInputId.Axis0,
+                            StickY      = ControllerInputId.Axis1,
                             StickButton = ControllerInputId.Button8,
                             DPadUp      = ControllerInputId.Hat0Up,
                             DPadDown    = ControllerInputId.Hat0Down,
@@ -717,8 +765,10 @@ namespace Ryujinx.Ui
                             ButtonMinus = ControllerInputId.Button6,
                             ButtonL     = ControllerInputId.Button4,
                             ButtonZl    = ControllerInputId.Axis2,
+                            ButtonSl    = ControllerInputId.Button10,
+                            ButtonSr    = ControllerInputId.Button11,
                         },
-                        RightJoycon = new NpadControllerRight
+                        RightJoycon      = new NpadControllerRight
                         {
                             StickX      = ControllerInputId.Axis3,
                             StickY      = ControllerInputId.Axis4,
@@ -730,6 +780,8 @@ namespace Ryujinx.Ui
                             ButtonPlus  = ControllerInputId.Button7,
                             ButtonR     = ControllerInputId.Button5,
                             ButtonZr    = ControllerInputId.Axis5,
+                            ButtonSl    = ControllerInputId.Button12,
+                            ButtonSr    = ControllerInputId.Button13,
                         }
                     };
                 }
@@ -774,7 +826,7 @@ namespace Ryujinx.Ui
 
             if (_inputDevice.ActiveId == "disabled") return;
 
-            object inputConfig          = GetValues();
+            object        inputConfig   = GetValues();
             ProfileDialog profileDialog = new ProfileDialog();
 
             if (inputConfig == null) return;

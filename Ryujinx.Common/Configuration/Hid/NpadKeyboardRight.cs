@@ -16,6 +16,7 @@ namespace Ryujinx.Common.Configuration.Hid
         public Key ButtonPlus;
         public Key ButtonR;
         public Key ButtonZr;
+        public Key ButtonSl;
         public Key ButtonSr;
     }
 }

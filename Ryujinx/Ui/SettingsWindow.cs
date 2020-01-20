@@ -65,6 +65,7 @@ namespace Ryujinx.Ui
             builder.Autoconnect(this);
 
             this.Icon = new Gdk.Pixbuf(Assembly.GetExecutingAssembly(), "Ryujinx.Ui.assets.Icon.png");
+
             _buttonBox.Show();
 
             //Bind Events
@@ -168,6 +169,7 @@ namespace Ryujinx.Ui
             _gameDirsBox.AppendColumn("", new CellRendererText(), "text", 0);
             _gameDirsBoxStore  = new ListStore(typeof(string));
             _gameDirsBox.Model = _gameDirsBoxStore;
+
             foreach (string gameDir in ConfigurationState.Instance.Ui.GameDirs.Value)
             {
                 _gameDirsBoxStore.AppendValues(gameDir);

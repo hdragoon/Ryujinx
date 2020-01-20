@@ -275,7 +275,7 @@ namespace Ryujinx.Configuration
         public ConfigurationFileFormat ToFileFormat()
         {
             List<NpadController> controllerConfigList = new List<NpadController>();
-            List<NpadKeyboard> keyboardConfigList     = new List<NpadKeyboard>();
+            List<NpadKeyboard>   keyboardConfigList   = new List<NpadKeyboard>();
 
             foreach (object inputConfig in Hid.InputConfig.Value)
             {
@@ -390,7 +390,8 @@ namespace Ryujinx.Configuration
                         ButtonMinus = Key.Minus,
                         ButtonL     = Key.E,
                         ButtonZl    = Key.Q,
-                        ButtonSl    = Key.R,
+                        ButtonSl    = Key.Home,
+                        ButtonSr    = Key.End
                     },
                     RightJoycon    = new NpadKeyboardRight
                     {
@@ -406,7 +407,8 @@ namespace Ryujinx.Configuration
                         ButtonPlus  = Key.Plus,
                         ButtonR     = Key.U,
                         ButtonZr    = Key.O,
-                        ButtonSr    = Key.Y,
+                        ButtonSl    = Key.PageUp,
+                        ButtonSr    = Key.PageDown
                     },
                     Hotkeys        = new KeyboardHotkeys
                     {
