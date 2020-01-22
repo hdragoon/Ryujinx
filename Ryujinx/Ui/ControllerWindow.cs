@@ -22,10 +22,9 @@ namespace Ryujinx.Ui
     public class ControllerWindow : Window
     {
         private static ControllerId _controllerId;
-        private static object       _inputConfig;
-        private static Gdk.Key?     _pressedKey;
-        private static bool         _isWaitingForInput;
-
+        private static object _inputConfig;
+        private static Gdk.Key? _pressedKey;
+        private static bool _isWaitingForInput;
         private static IJsonFormatterResolver _resolver;
 
 #pragma warning disable CS0649
@@ -380,100 +379,93 @@ namespace Ryujinx.Ui
         {
             if (_inputDevice.ActiveId.StartsWith("keyboard"))
             {
-                try
+                NpadKeyboard keyboardConfig = new NpadKeyboard
                 {
-                    return new NpadKeyboard
+                    Index          = int.Parse(_inputDevice.ActiveId.Split("/")[1]),
+                    ControllerType = Enum.Parse<ControllerType>(_controllerType.ActiveId),
+                    ControllerId   = _controllerId,
+                    LeftJoycon     = new NpadKeyboardLeft(),
+                    RightJoycon    = new NpadKeyboardRight(),
+                    Hotkeys        = new KeyboardHotkeys
                     {
-                        Index          = int.Parse(_inputDevice.ActiveId.Split("/")[1]),
-                        ControllerType = Enum.Parse<ControllerType>(_controllerType.ActiveId),
-                        ControllerId   = _controllerId,
-                        LeftJoycon     = new NpadKeyboardLeft
-                        {
-                            StickUp     = Enum.Parse<Key>(_lStickUp.Label),
-                            StickDown   = Enum.Parse<Key>(_lStickDown.Label),
-                            StickLeft   = Enum.Parse<Key>(_lStickLeft.Label),
-                            StickRight  = Enum.Parse<Key>(_lStickRight.Label),
-                            StickButton = Enum.Parse<Key>(_lStickButton.Label),
-                            DPadUp      = Enum.Parse<Key>(_dpadUp.Label),
-                            DPadDown    = Enum.Parse<Key>(_dpadDown.Label),
-                            DPadLeft    = Enum.Parse<Key>(_dpadLeft.Label),
-                            DPadRight   = Enum.Parse<Key>(_dpadRight.Label),
-                            ButtonMinus = Enum.Parse<Key>(_minus.Label),
-                            ButtonL     = Enum.Parse<Key>(_l.Label),
-                            ButtonZl    = Enum.Parse<Key>(_zL.Label),
-                            ButtonSl    = Enum.Parse<Key>(_lSl.Label),
-                            ButtonSr    = Enum.Parse<Key>(_lSr.Label)
-                        },
-                        RightJoycon    = new NpadKeyboardRight
-                        {
-                            StickUp     = Enum.Parse<Key>(_rStickUp.Label),
-                            StickDown   = Enum.Parse<Key>(_rStickDown.Label),
-                            StickLeft   = Enum.Parse<Key>(_rStickLeft.Label),
-                            StickRight  = Enum.Parse<Key>(_rStickRight.Label),
-                            StickButton = Enum.Parse<Key>(_rStickButton.Label),
-                            ButtonA     = Enum.Parse<Key>(_a.Label),
-                            ButtonB     = Enum.Parse<Key>(_b.Label),
-                            ButtonX     = Enum.Parse<Key>(_x.Label),
-                            ButtonY     = Enum.Parse<Key>(_y.Label),
-                            ButtonPlus  = Enum.Parse<Key>(_plus.Label),
-                            ButtonR     = Enum.Parse<Key>(_r.Label),
-                            ButtonZr    = Enum.Parse<Key>(_zR.Label),
-                            ButtonSl    = Enum.Parse<Key>(_rSl.Label),
-                            ButtonSr    = Enum.Parse<Key>(_rSr.Label)
-                        },
-                        Hotkeys        = new KeyboardHotkeys
-                        {
-                            ToggleVsync = Key.Tab //TODO: Make this an option in the GUI
-                        }
-                    };
-                }
-                catch { }
+                        ToggleVsync = Key.Tab //TODO: Make this an option in the GUI
+                    }
+                };
+
+                Enum.TryParse(_lStickUp.Label,     out keyboardConfig.LeftJoycon.StickLeft);
+                Enum.TryParse(_lStickDown.Label,   out keyboardConfig.LeftJoycon.StickDown);
+                Enum.TryParse(_lStickLeft.Label,   out keyboardConfig.LeftJoycon.StickLeft);
+                Enum.TryParse(_lStickRight.Label,  out keyboardConfig.LeftJoycon.StickRight);
+                Enum.TryParse(_lStickButton.Label, out keyboardConfig.LeftJoycon.StickButton);
+                Enum.TryParse(_dpadUp.Label,       out keyboardConfig.LeftJoycon.DPadUp);
+                Enum.TryParse(_dpadDown.Label,     out keyboardConfig.LeftJoycon.DPadDown);
+                Enum.TryParse(_dpadLeft.Label,     out keyboardConfig.LeftJoycon.DPadLeft);
+                Enum.TryParse(_dpadRight.Label,    out keyboardConfig.LeftJoycon.DPadRight);
+                Enum.TryParse(_minus.Label,        out keyboardConfig.LeftJoycon.ButtonMinus);
+                Enum.TryParse(_l.Label,            out keyboardConfig.LeftJoycon.ButtonL);
+                Enum.TryParse(_zL.Label,           out keyboardConfig.LeftJoycon.ButtonZl);
+                Enum.TryParse(_lSl.Label,          out keyboardConfig.LeftJoycon.ButtonSl);
+                Enum.TryParse(_lSr.Label,          out keyboardConfig.LeftJoycon.ButtonSr);
+
+                Enum.TryParse(_rStickUp.Label,     out keyboardConfig.RightJoycon.StickUp);
+                Enum.TryParse(_rStickDown.Label,   out keyboardConfig.RightJoycon.StickDown);
+                Enum.TryParse(_rStickLeft.Label,   out keyboardConfig.RightJoycon.StickLeft);
+                Enum.TryParse(_rStickRight.Label,  out keyboardConfig.RightJoycon.StickRight);
+                Enum.TryParse(_rStickButton.Label, out keyboardConfig.RightJoycon.StickButton);
+                Enum.TryParse(_a.Label,            out keyboardConfig.RightJoycon.ButtonA);
+                Enum.TryParse(_b.Label,            out keyboardConfig.RightJoycon.ButtonB);
+                Enum.TryParse(_x.Label,            out keyboardConfig.RightJoycon.ButtonX);
+                Enum.TryParse(_y.Label,            out keyboardConfig.RightJoycon.ButtonY);
+                Enum.TryParse(_plus.Label,         out keyboardConfig.RightJoycon.ButtonPlus);
+                Enum.TryParse(_r.Label,            out keyboardConfig.RightJoycon.ButtonR);
+                Enum.TryParse(_zR.Label,           out keyboardConfig.RightJoycon.ButtonZr);
+                Enum.TryParse(_rSl.Label,          out keyboardConfig.RightJoycon.ButtonSl);
+                Enum.TryParse(_rSr.Label,          out keyboardConfig.RightJoycon.ButtonSr);
+
+                return keyboardConfig;
             }
-            else if (_inputDevice.ActiveId.StartsWith("controller"))
+            
+            if (_inputDevice.ActiveId.StartsWith("controller"))
             {
-                try
+                NpadController controllerConfig = new NpadController
                 {
-                    return new NpadController
-                    {
-                        Index            = int.Parse(_inputDevice.ActiveId.Split("/")[1]),
-                        ControllerType   = Enum.Parse<ControllerType>(_controllerType.ActiveId),
-                        ControllerId     = _controllerId,
-                        DeadzoneLeft     = (float)_controllerDeadzoneLeft.Value,
-                        DeadzoneRight    = (float)_controllerDeadzoneRight.Value,
-                        TriggerThreshold = (float)_controllerTriggerThreshold.Value,
-                        LeftJoycon       = new NpadControllerLeft
-                        {
-                            StickX      = Enum.Parse<ControllerInputId>(_lStickX.Label),
-                            StickY      = Enum.Parse<ControllerInputId>(_lStickY.Label),
-                            StickButton = Enum.Parse<ControllerInputId>(_lStickButton.Label),
-                            DPadUp      = Enum.Parse<ControllerInputId>(_dpadUp.Label),
-                            DPadDown    = Enum.Parse<ControllerInputId>(_dpadDown.Label),
-                            DPadLeft    = Enum.Parse<ControllerInputId>(_dpadLeft.Label),
-                            DPadRight   = Enum.Parse<ControllerInputId>(_dpadRight.Label),
-                            ButtonMinus = Enum.Parse<ControllerInputId>(_minus.Label),
-                            ButtonL     = Enum.Parse<ControllerInputId>(_l.Label),
-                            ButtonZl    = Enum.Parse<ControllerInputId>(_zL.Label),
-                            ButtonSl    = Enum.Parse<ControllerInputId>(_lSl.Label),
-                            ButtonSr    = Enum.Parse<ControllerInputId>(_lSr.Label)
-                        },
-                        RightJoycon      = new NpadControllerRight
-                        {
-                            StickX      = Enum.Parse<ControllerInputId>(_rStickX.Label),
-                            StickY      = Enum.Parse<ControllerInputId>(_rStickY.Label),
-                            StickButton = Enum.Parse<ControllerInputId>(_rStickButton.Label),
-                            ButtonA     = Enum.Parse<ControllerInputId>(_a.Label),
-                            ButtonB     = Enum.Parse<ControllerInputId>(_b.Label),
-                            ButtonX     = Enum.Parse<ControllerInputId>(_x.Label),
-                            ButtonY     = Enum.Parse<ControllerInputId>(_y.Label),
-                            ButtonPlus  = Enum.Parse<ControllerInputId>(_plus.Label),
-                            ButtonR     = Enum.Parse<ControllerInputId>(_r.Label),
-                            ButtonZr    = Enum.Parse<ControllerInputId>(_zR.Label),
-                            ButtonSl    = Enum.Parse<ControllerInputId>(_rSl.Label),
-                            ButtonSr    = Enum.Parse<ControllerInputId>(_rSr.Label)
-                        }
-                    };
-                }
-                catch { }
+                    Index            = int.Parse(_inputDevice.ActiveId.Split("/")[1]),
+                    ControllerType   = Enum.Parse<ControllerType>(_controllerType.ActiveId),
+                    ControllerId     = _controllerId,
+                    DeadzoneLeft     = (float)_controllerDeadzoneLeft.Value,
+                    DeadzoneRight    = (float)_controllerDeadzoneRight.Value,
+                    TriggerThreshold = (float)_controllerTriggerThreshold.Value,
+                    LeftJoycon       = new NpadControllerLeft(),
+                    RightJoycon      = new NpadControllerRight()
+                };
+
+                Enum.TryParse(_lStickX.Label,      out controllerConfig.LeftJoycon.StickX);
+                Enum.TryParse(_lStickY.Label,      out controllerConfig.LeftJoycon.StickY);
+                Enum.TryParse(_lStickButton.Label, out controllerConfig.LeftJoycon.StickButton);
+                Enum.TryParse(_dpadUp.Label,       out controllerConfig.LeftJoycon.DPadUp);
+                Enum.TryParse(_dpadDown.Label,     out controllerConfig.LeftJoycon.DPadDown);
+                Enum.TryParse(_dpadLeft.Label,     out controllerConfig.LeftJoycon.DPadLeft);
+                Enum.TryParse(_dpadRight.Label,    out controllerConfig.LeftJoycon.DPadRight);
+                Enum.TryParse(_minus.Label,        out controllerConfig.LeftJoycon.ButtonMinus);
+                Enum.TryParse(_l.Label,            out controllerConfig.LeftJoycon.ButtonL);
+                Enum.TryParse(_zL.Label,           out controllerConfig.LeftJoycon.ButtonZl);
+                Enum.TryParse(_lSl.Label,          out controllerConfig.LeftJoycon.ButtonSl);
+                Enum.TryParse(_lSr.Label,          out controllerConfig.LeftJoycon.ButtonSr);
+
+                Enum.TryParse(_rStickX.Label,      out controllerConfig.RightJoycon.StickX);
+                Enum.TryParse(_rStickY.Label,      out controllerConfig.RightJoycon.StickY);
+                Enum.TryParse(_rStickButton.Label, out controllerConfig.RightJoycon.StickButton);
+                Enum.TryParse(_a.Label,            out controllerConfig.RightJoycon.ButtonA);
+                Enum.TryParse(_b.Label,            out controllerConfig.RightJoycon.ButtonB);
+                Enum.TryParse(_x.Label,            out controllerConfig.RightJoycon.ButtonX);
+                Enum.TryParse(_y.Label,            out controllerConfig.RightJoycon.ButtonY);
+                Enum.TryParse(_plus.Label,         out controllerConfig.RightJoycon.ButtonPlus);
+                Enum.TryParse(_r.Label,            out controllerConfig.RightJoycon.ButtonR);
+                Enum.TryParse(_zR.Label,           out controllerConfig.RightJoycon.ButtonZr);
+                Enum.TryParse(_rSl.Label,          out controllerConfig.RightJoycon.ButtonSl);
+                Enum.TryParse(_rSr.Label,          out controllerConfig.RightJoycon.ButtonSr);
+
+                return controllerConfig;
             }
 
             GtkDialog.CreateErrorDialog("Some fields entered where invalid and therefore your config was not saved.");
