@@ -819,7 +819,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid
         public ResultCode EnableUnintendedHomeButtonInputProtection(ServiceCtx context)
         {
             _unintendedHomeButtonInputProtectionEnabled = context.RequestData.ReadBoolean();
-            uint  unknown0                              = context.RequestData.ReadUInt32();
+            uint unknown0                               = context.RequestData.ReadUInt32();
             long appletResourceUserId                   = context.RequestData.ReadInt64();
 
             Logger.PrintStub(LogClass.ServiceHid, new { appletResourceUserId, unknown0, _unintendedHomeButtonInputProtectionEnabled });
