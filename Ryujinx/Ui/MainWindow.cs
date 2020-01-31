@@ -73,6 +73,8 @@ namespace Ryujinx.Ui
         {
             builder.Autoconnect(this);
 
+            this.Icon = new Gdk.Pixbuf(Assembly.GetExecutingAssembly(), "Ryujinx.Ui.assets.Icon.png");
+
             DeleteEvent += Window_Close;
 
             ApplicationLibrary.ApplicationAdded        += Application_Added;
@@ -105,7 +107,6 @@ namespace Ryujinx.Ui
 
             ApplyTheme();
 
-            this.Icon                = new Gdk.Pixbuf(Assembly.GetExecutingAssembly(), "Ryujinx.Ui.assets.Icon.png");
             _stopEmulation.Sensitive = false;
 
             if (ConfigurationState.Instance.Ui.GuiColumns.FavColumn)        _favToggle.Active        = true;
@@ -822,7 +823,7 @@ namespace Ryujinx.Ui
 
         private void Settings_Pressed(object sender, EventArgs args)
         {
-            SettingsWindow settingsWin = new SettingsWindow();
+            SettingsWindow settingsWin = new SettingsWindow(_virtualFileSystem);
             settingsWin.Show();
         }
 

@@ -26,6 +26,7 @@ namespace Ryujinx.Ui
         private static Gdk.Key? _pressedKey;
         private static bool _isWaitingForInput;
         private static IJsonFormatterResolver _resolver;
+        private static VirtualFileSystem _virtualFileSystem;
 
 #pragma warning disable CS0649
 #pragma warning disable IDE0044
@@ -82,15 +83,16 @@ namespace Ryujinx.Ui
 #pragma warning restore CS0649
 #pragma warning restore IDE0044
 
-        public ControllerWindow(ControllerId controllerId) : this(new Builder("Ryujinx.Ui.ControllerWindow.glade"), controllerId) { }
+        public ControllerWindow(ControllerId controllerId, VirtualFileSystem virtualFileSystem) : this(new Builder("Ryujinx.Ui.ControllerWindow.glade"), controllerId, virtualFileSystem) { }
 
-        private ControllerWindow(Builder builder, ControllerId controllerId) : base(builder.GetObject("_controllerWin").Handle)
+        private ControllerWindow(Builder builder, ControllerId controllerId, VirtualFileSystem virtualFileSystem) : base(builder.GetObject("_controllerWin").Handle)
         {
             builder.Autoconnect(this);
 
             this.Icon = new Gdk.Pixbuf(Assembly.GetExecutingAssembly(), "Ryujinx.Ui.assets.Icon.png");
 
-            _controllerId = controllerId;
+            _controllerId      = controllerId;
+            _virtualFileSystem = virtualFileSystem;
 
             _inputConfig = ConfigurationState.Instance.Hid.InputConfig.Value.Find(inputConfig =>
             {
@@ -150,6 +152,8 @@ namespace Ryujinx.Ui
             // Setup current values
             UpdateInputDeviceList();
             SetAvailableOptions();
+            ClearValues();
+            SetCurrentValues();
         }
 
         private void UpdateInputDeviceList()
@@ -193,27 +197,23 @@ namespace Ryujinx.Ui
                 _deadZoneLeftBox.Hide();
                 _deadZoneRightBox.Hide();
                 _triggerThresholdBox.Hide();
-
-                SetCurrentValues();
             }
             else if (_inputDevice.ActiveId != null && _inputDevice.ActiveId.StartsWith("controller"))
             {
                 this.ShowAll();
                 _leftStickKeyboard.Hide();
                 _rightStickKeyboard.Hide();
-
-                SetCurrentValues();
             }
             else
             {
                 _settingsBox.Hide();
             }
+
+            ClearValues();
         }
 
         private void SetCurrentValues()
         {
-            ClearValues();
-
             SetControllerSpecificFields();
 
             SetProfiles();
@@ -300,11 +300,6 @@ namespace Ryujinx.Ui
         {
             if (config is NpadKeyboard keyboardConfig)
             {
-                if (!_inputDevice.ActiveId.StartsWith("keyboard"))
-                {
-                    _inputDevice.SetActiveId($"keyboard/{keyboardConfig.Index}");
-                }
-                
                 _controllerType.SetActiveId(keyboardConfig.ControllerType.ToString());
 
                 _lStickUp.Label     = keyboardConfig.LeftJoycon.StickUp.ToString();
@@ -338,11 +333,6 @@ namespace Ryujinx.Ui
             }
             else if (config is NpadController controllerConfig)
             {
-                if (!_inputDevice.ActiveId.StartsWith("controller"))
-                {
-                    _inputDevice.SetActiveId($"controller/{controllerConfig.Index}");
-                }
-
                 _controllerType.SetActiveId(controllerConfig.ControllerType.ToString());
 
                 _lStickX.Label                    = controllerConfig.LeftJoycon.StickX.ToString();
@@ -392,7 +382,7 @@ namespace Ryujinx.Ui
                     }
                 };
 
-                Enum.TryParse(_lStickUp.Label,     out keyboardConfig.LeftJoycon.StickLeft);
+                Enum.TryParse(_lStickUp.Label,     out keyboardConfig.LeftJoycon.StickUp);
                 Enum.TryParse(_lStickDown.Label,   out keyboardConfig.LeftJoycon.StickDown);
                 Enum.TryParse(_lStickLeft.Label,   out keyboardConfig.LeftJoycon.StickLeft);
                 Enum.TryParse(_lStickRight.Label,  out keyboardConfig.LeftJoycon.StickRight);
@@ -541,16 +531,35 @@ namespace Ryujinx.Ui
             return false;
         }
 
+        private string GetProfileBasePath()
+        {
+            string path = System.IO.Path.Combine(_virtualFileSystem.GetBasePath(), "profiles");
+
+            if (_inputDevice.ActiveId.StartsWith("keyboard"))
+            {
+                path = System.IO.Path.Combine(path, "keyboard");
+            }
+            else if (_inputDevice.ActiveId.StartsWith("controller"))
+            {
+                path = System.IO.Path.Combine(path, "controller");
+            }
+
+            return path;
+        }
+
+        //Events
         [GLib.ConnectBefore]
         private static void Key_Pressed(object sender, KeyPressEventArgs args)
         {
             _pressedKey = args.Event.Key;
         }
 
-        //Events
         private void InputDevice_Changed(object sender, EventArgs args)
         {
             SetAvailableOptions();
+            SetControllerSpecificFields();
+
+            if (_inputDevice.ActiveId != null) SetProfiles();
         }
 
         private void Controller_Changed(object sender, EventArgs args)
@@ -661,7 +670,7 @@ namespace Ryujinx.Ui
 
         private void SetProfiles()
         {
-            string basePath = System.IO.Path.Combine(new VirtualFileSystem().GetBasePath(), "profiles");
+            string basePath = GetProfileBasePath();
             
             if (!Directory.Exists(basePath))
             {
@@ -694,7 +703,6 @@ namespace Ryujinx.Ui
                     {
                         Index          = 0,
                         ControllerType = ControllerType.NpadPair,
-                        ControllerId   = _controllerId,
                         LeftJoycon     = new NpadKeyboardLeft
                         {
                             StickUp     = Key.W,
@@ -741,7 +749,6 @@ namespace Ryujinx.Ui
                     {
                         Index            = 0,
                         ControllerType   = ControllerType.ProController,
-                        ControllerId     = _controllerId,
                         DeadzoneLeft     = 0.05f,
                         DeadzoneRight    = 0.05f,
                         TriggerThreshold = 0.5f,
@@ -780,7 +787,7 @@ namespace Ryujinx.Ui
             }
             else
             {
-                string path = System.IO.Path.Combine(new VirtualFileSystem().GetBasePath(), "profiles", _profile.ActiveId);
+                string path = System.IO.Path.Combine(GetProfileBasePath(), _profile.ActiveId);
 
                 if (!File.Exists(path))
                 {
@@ -825,7 +832,7 @@ namespace Ryujinx.Ui
 
             if (profileDialog.Run() == (int)ResponseType.Ok)
             {
-                string path = System.IO.Path.Combine(new VirtualFileSystem().GetBasePath(), "profiles", profileDialog.FileName);
+                string path = System.IO.Path.Combine(GetProfileBasePath(), profileDialog.FileName);
                 byte[] data = JsonSerializer.Serialize(inputConfig, _resolver);
 
                 File.WriteAllText(path, Encoding.UTF8.GetString(data, 0, data.Length).PrettyPrintJson());
@@ -838,18 +845,25 @@ namespace Ryujinx.Ui
 
         private void ProfileRemove_Activated(object sender, EventArgs args)
         {
-            ((ToggleButton)sender).SetStateFlags(0, true);
+            ((ToggleButton) sender).SetStateFlags(0, true);
 
             if (_inputDevice.ActiveId == "disabled" || _profile.ActiveId == "default" || _profile.ActiveId == null) return;
-            
-            string path = System.IO.Path.Combine(new VirtualFileSystem().GetBasePath(), "profiles", _profile.ActiveId);
 
-            if (File.Exists(path))
+            MessageDialog confirmDialog = GtkDialog.CreateConfirmationDialog("Deleting Profile", "This action is irreversible, Are your sure you want to continue?");
+
+            if (confirmDialog.Run() == (int)ResponseType.Yes)
             {
-                File.Delete(path);
+                string path = System.IO.Path.Combine(GetProfileBasePath(), _profile.ActiveId);
+
+                if (File.Exists(path))
+                {
+                    File.Delete(path);
+                }
+
+                SetProfiles();
             }
 
-            SetProfiles();
+            confirmDialog.Dispose();
         }
 
         private void SaveToggle_Activated(object sender, EventArgs args)

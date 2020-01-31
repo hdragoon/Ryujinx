@@ -1,11 +1,12 @@
 using Gtk;
+using Ryujinx.Common.Configuration.Hid;
 using Ryujinx.Configuration;
 using Ryujinx.Configuration.System;
+using Ryujinx.HLE.FileSystem;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
-using Ryujinx.Common.Configuration.Hid;
 
 using GUI = Gtk.Builder.ObjectAttribute;
 
@@ -13,11 +14,11 @@ namespace Ryujinx.Ui
 {
     public class SettingsWindow : Window
     {
-        private static ListStore _gameDirsBoxStore;
+        private static ListStore         _gameDirsBoxStore;
+        private static VirtualFileSystem _virtualFileSystem;
 
 #pragma warning disable CS0649
 #pragma warning disable IDE0044
-        [GUI] Box          _buttonBox;
         [GUI] CheckButton  _errorLogToggle;
         [GUI] CheckButton  _warningLogToggle;
         [GUI] CheckButton  _infoLogToggle;
@@ -58,15 +59,15 @@ namespace Ryujinx.Ui
 #pragma warning restore CS0649
 #pragma warning restore IDE0044
 
-        public SettingsWindow() : this(new Builder("Ryujinx.Ui.SettingsWindow.glade")) { }
+        public SettingsWindow(VirtualFileSystem virtualFileSystem) : this(new Builder("Ryujinx.Ui.SettingsWindow.glade"), virtualFileSystem) { }
 
-        private SettingsWindow(Builder builder) : base(builder.GetObject("_settingsWin").Handle)
+        private SettingsWindow(Builder builder, VirtualFileSystem virtualFileSystem) : base(builder.GetObject("_settingsWin").Handle)
         {
             builder.Autoconnect(this);
 
             this.Icon = new Gdk.Pixbuf(Assembly.GetExecutingAssembly(), "Ryujinx.Ui.assets.Icon.png");
 
-            _buttonBox.Show();
+            _virtualFileSystem = virtualFileSystem;
 
             //Bind Events
             _configureController1.Pressed += (sender, args) => ConfigureController_Pressed(sender, args, ControllerId.ControllerPlayer1);
@@ -250,7 +251,7 @@ namespace Ryujinx.Ui
         {
             ((ToggleButton)sender).SetStateFlags(0, true);
 
-            ControllerWindow controllerWin = new ControllerWindow(controllerId);
+            ControllerWindow controllerWin = new ControllerWindow(controllerId, _virtualFileSystem);
             controllerWin.Show();
         }
 

@@ -29,5 +29,19 @@ namespace Ryujinx.Ui
         {
             CreateDialog("Ryujinx - Error", "Ryujinx has encountered an error", errorMessage);
         }
+
+        internal static MessageDialog CreateConfirmationDialog(string mainText, string secondaryText = "")
+        {
+            MessageDialog confirmDialog = new MessageDialog(null, DialogFlags.Modal, MessageType.Info, ButtonsType.YesNo, null)
+            {
+                Title          = "Ryujinx - Confirmation",
+                Icon           = new Gdk.Pixbuf(Assembly.GetExecutingAssembly(), "Ryujinx.Ui.assets.Icon.png"),
+                Text           = mainText,
+                SecondaryText  = secondaryText,
+                WindowPosition = WindowPosition.Center
+            };
+
+            return confirmDialog;
+        }
     }
 }
