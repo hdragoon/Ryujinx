@@ -501,7 +501,7 @@ namespace Ryujinx.Ui
             //Axis
             for (int i = 0; i != joystickCapabilities.AxisCount; i++)
             {
-                if (joystickState.GetAxis(i) > triggerThreshold)
+                if (joystickState.GetAxis(i) > 0.5f && joystickState.GetAxis(i) > triggerThreshold)
                 {
                     Enum.TryParse($"Axis{i}", out pressedButton);
 
