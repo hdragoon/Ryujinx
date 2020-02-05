@@ -2,9 +2,7 @@ using Gtk;
 using JsonPrettyPrinterPlus;
 using OpenTK.Input;
 using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Threading;
@@ -23,7 +21,6 @@ namespace Ryujinx.Ui
     {
         private static ControllerId _controllerId;
         private static object _inputConfig;
-        private static Gdk.Key? _pressedKey;
         private static bool _isWaitingForInput;
         private static IJsonFormatterResolver _resolver;
         private static VirtualFileSystem _virtualFileSystem;
@@ -161,12 +158,10 @@ namespace Ryujinx.Ui
             _inputDevice.RemoveAll();
             _inputDevice.Append("disabled", "Disabled");
 
-            //TODO: Remove this line and uncomment the loop below when the keyboard API is implemented in OpenTK.
-            _inputDevice.Append("keyboard/0", "Keyboard/0");
-            /*for (int i = 0; Keyboard.GetState(i).IsConnected; i++)
+            for (int i = 0; Keyboard.GetState(i).IsConnected; i++)
             {
                 _inputDevice.Append($"keyboard/{i}", $"Keyboard/{i}");
-            }*/
+            }
 
             for (int i = 0; GamePad.GetState(i).IsConnected; i++)
             {
@@ -482,7 +477,7 @@ namespace Ryujinx.Ui
             return false;
         }
 
-        private static bool IsAnyButtonPressed(int index, double triggerThreshold, out ControllerInputId pressedButton)
+        private static bool IsAnyButtonPressed(out ControllerInputId pressedButton, int index, double triggerThreshold)
         {
             JoystickState        joystickState        = Joystick.GetState(index);
             JoystickCapabilities joystickCapabilities = Joystick.GetCapabilities(index);
@@ -548,12 +543,6 @@ namespace Ryujinx.Ui
         }
 
         //Events
-        [GLib.ConnectBefore]
-        private static void Key_Pressed(object sender, KeyPressEventArgs args)
-        {
-            _pressedKey = args.Event.Key;
-        }
-
         private void InputDevice_Changed(object sender, EventArgs args)
         {
             SetAvailableOptions();
@@ -574,7 +563,6 @@ namespace Ryujinx.Ui
             _refreshInputDevicesButton.SetStateFlags(0, true);
         }
 
-        //TODO: Replace events with polling when the keyboard API is implemented in OpenTK.
         private void Button_Pressed(object sender, EventArgs args)
         {
             if (_isWaitingForInput)
@@ -587,48 +575,31 @@ namespace Ryujinx.Ui
             Thread inputThread = new Thread(() =>
             {
                 Button button = (ToggleButton)sender;
-                Application.Invoke(delegate { KeyPressEvent += Key_Pressed; });
 
                 if (_inputDevice.ActiveId.StartsWith("keyboard"))
                 {
-                    while (!_pressedKey.HasValue)
+                    Key pressedKey;
+
+                    int index = int.Parse(_inputDevice.ActiveId.Split("/")[1]);
+                    while (!IsAnyKeyPressed(out pressedKey, index))
                     {
-                        if (Mouse.GetState().IsAnyButtonDown || _pressedKey == Gdk.Key.Escape)
+                        if (Mouse.GetState().IsAnyButtonDown || Keyboard.GetState().IsKeyDown(OpenTK.Input.Key.Escape))
                         {
                             Application.Invoke(delegate
                             {
                                 button.SetStateFlags(0, true);
-                                KeyPressEvent -= Key_Pressed;
                             });
 
-                            _pressedKey        = null;
                             _isWaitingForInput = false;
 
                             return;
                         }
                     }
 
-                    string key    = _pressedKey.ToString();
-                    string capKey = key.First().ToString().ToUpper() + key.Substring(1);
-                    _pressedKey   = null;
-
                     Application.Invoke(delegate
                     {
-                        if (Enum.IsDefined(typeof(Key), capKey))
-                        {
-                            button.Label = capKey;
-                        }
-                        else if (GtkToOpenTkInput.ContainsKey(key))
-                        {
-                            button.Label = GtkToOpenTkInput[key];
-                        }
-                        else
-                        {
-                            button.Label = "Unknown";
-                        }
-
+                        button.Label = pressedKey.ToString();
                         button.SetStateFlags(0, true);
-                        KeyPressEvent -= Key_Pressed;
                     });
                 }
                 else if (_inputDevice.ActiveId.StartsWith("controller"))
@@ -636,17 +607,15 @@ namespace Ryujinx.Ui
                     ControllerInputId pressedButton;
 
                     int index = int.Parse(_inputDevice.ActiveId.Split("/")[1]);
-                    while (!IsAnyButtonPressed(index, _controllerTriggerThreshold.Value, out pressedButton))
+                    while (!IsAnyButtonPressed(out pressedButton, index, _controllerTriggerThreshold.Value))
                     {
-                        if (Mouse.GetState().IsAnyButtonDown || _pressedKey.HasValue)
+                        if (Mouse.GetState().IsAnyButtonDown || Keyboard.GetState().IsAnyKeyDown)
                         {
                             Application.Invoke(delegate
                             {
                                 button.SetStateFlags(0, true);
-                                KeyPressEvent -= Key_Pressed;
                             });
 
-                            _pressedKey        = null;
                             _isWaitingForInput = false;
 
                             return;
@@ -657,7 +626,6 @@ namespace Ryujinx.Ui
                     {
                         button.Label = pressedButton.ToString();
                         button.SetStateFlags(0, true);
-                        KeyPressEvent -= Key_Pressed;
                     });
                 }
 
@@ -893,64 +861,5 @@ namespace Ryujinx.Ui
         {
             Dispose();
         }
-
-        //TODO: Remove this dict when the keyboard API is implemented in OpenTK.
-        public readonly Dictionary<string, string> GtkToOpenTkInput = new Dictionary<string, string>()
-        {
-            { "Alt_L",       "AltLeft"        },
-            { "Alt_R",       "AltRight"       },
-            { "Control_L",   "ControlLeft"    },
-            { "Control_R",   "ControlRight"   },
-            { "KP_0",        "Keypad0"        },
-            { "KP_1",        "Keypad1"        },
-            { "KP_2",        "Keypad2"        },
-            { "KP_3",        "Keypad3"        },
-            { "KP_4",        "Keypad4"        },
-            { "KP_5",        "Keypad5"        },
-            { "KP_6",        "Keypad6"        },
-            { "KP_7",        "Keypad7"        },
-            { "KP_8",        "Keypad8"        },
-            { "KP_9",        "Keypad9"        },
-            { "KP_Add",      "KeypadAdd"      },
-            { "KP_Decimal",  "KeypadDecimal"  },
-            { "KP_Divide",   "KeypadDivide"   },
-            { "KP_Down",     "Down"           },
-            { "KP_Enter",    "KeypadEnter"    },
-            { "KP_Left",     "Left"           },
-            { "KP_Multiply", "KeypadMultiply" },
-            { "KP_Right",    "Right"          },
-            { "KP_Subtract", "KeypadSubtract" },
-            { "KP_Up",       "Up"             },
-            { "Key_0",       "Number0"        },
-            { "Key_1",       "Number1"        },
-            { "Key_2",       "Number2"        },
-            { "Key_3",       "Number3"        },
-            { "Key_4",       "Number4"        },
-            { "Key_5",       "Number5"        },
-            { "Key_6",       "Number6"        },
-            { "Key_7",       "Number7"        },
-            { "Key_8",       "Number8"        },
-            { "Key_9",       "Number9"        },
-            { "Meta_L",      "WinLeft"        },
-            { "Meta_R",      "WinRight"       },
-            { "Next",        "PageDown"       },
-            { "Num_Lock",    "NumLock"        },
-            { "Page_Down",   "PageDown"       },
-            { "Page_Up",     "PageUp"         },
-            { "Prior",       "PageUp"         },
-            { "Return",      "Enter"          },
-            { "Shift_L",     "ShiftLeft"      },
-            { "Shift_R",     "ShiftRight"     },
-            { "VoidSymbol",  "CapsLock"       },
-            { "backslash",   "BackSlash"      },
-            { "bracketleft", "BracketLeft"    },
-            { "bracketright","BracketRight"   },
-            { "downarrow",   "Down"           },
-            { "equal",       "Plus"           },
-            { "leftarrow",   "Left"           },
-            { "quoteleft",   "Grave"          },
-            { "rightarrow",  "Right"          },
-            { "uparrow",     "Up"             }
-        };
     }
 }

@@ -26,8 +26,6 @@ namespace Ryujinx.Ui
 
         private HotkeyButtons[] _prevHotkeyButtons;
 
-        private KeyboardState? _keyboard = null;
-
         private MouseState? _mouse = null;
 
         private Thread _renderThread;
@@ -163,21 +161,17 @@ namespace Ryujinx.Ui
                     // Keyboard Input
                     KeyboardController keyboardInput = new KeyboardController(keyboardController);
 
-                    if (_keyboard.HasValue)
+                    currentHotkeyButtons[i] = keyboardInput.GetHotkeyButtons();
+                    currentButton[i]        = keyboardInput.GetButtons();
+
+
+                    if (ConfigurationState.Instance.Hid.EnableKeyboard)
                     {
-                        KeyboardState keyboard = _keyboard.Value;
-
-                        currentHotkeyButtons[i] = keyboardInput.GetHotkeyButtons(keyboard);
-                        currentButton[i]        = keyboardInput.GetButtons(keyboard);
-
-                        if (ConfigurationState.Instance.Hid.EnableKeyboard)
-                        {
-                            hidKeyboard[i] = keyboardInput.GetKeysDown(keyboard);
-                        }
-
-                        (leftJoystickDx[i],  leftJoystickDy[i])  = keyboardInput.GetLeftStick(keyboard);
-                        (rightJoystickDx[i], rightJoystickDy[i]) = keyboardInput.GetRightStick(keyboard);
+                        hidKeyboard[i] = keyboardInput.GetKeysDown();
                     }
+
+                    (leftJoystickDx[i],  leftJoystickDy[i])  = keyboardInput.GetLeftStick();
+                    (rightJoystickDx[i], rightJoystickDy[i]) = keyboardInput.GetRightStick();
 
                     if (hidKeyboard[i] == null)
                     {
@@ -352,13 +346,6 @@ namespace Ryujinx.Ui
                     WindowState = WindowState.Fullscreen;
                 }
             }
-
-            _keyboard = e.Keyboard;
-        }
-
-        protected override void OnKeyUp(KeyboardKeyEventArgs e)
-        {
-            _keyboard = e.Keyboard;
         }
 
         protected override void OnMouseDown(MouseButtonEventArgs e)

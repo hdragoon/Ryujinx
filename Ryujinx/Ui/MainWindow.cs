@@ -8,7 +8,6 @@ using Ryujinx.Graphics.GAL;
 using Ryujinx.Graphics.OpenGL;
 using Ryujinx.HLE.FileSystem;
 using Ryujinx.HLE.FileSystem.Content;
-using Ryujinx.HLE.FileSystem;
 using System;
 using System.Diagnostics;
 using System.IO;
@@ -38,9 +37,8 @@ namespace Ryujinx.Ui
         private static bool _ending;
         private static bool _debuggerOpened;
 
-        private static TreeView _treeView;
-
         private static Debugger.Debugger _debugger;
+
 #pragma warning disable CS0649
 #pragma warning disable IDE0044
         [GUI] CheckMenuItem _fullScreen;
@@ -348,7 +346,7 @@ namespace Ryujinx.Ui
 #if MACOS_BUILD
                 CreateGameWindow(device);
 #else
-                var windowThread = new Thread(() =>
+                Thread windowThread = new Thread(() =>
                 {
                     CreateGameWindow(device);
                 })
@@ -648,7 +646,7 @@ namespace Ryujinx.Ui
 
         private void RefreshFirmwareLabel()
         {
-            var currentFirmware = _contentManager.GetCurrentFirmwareVersion();
+            SystemVersion currentFirmware = _contentManager.GetCurrentFirmwareVersion();
 
             GLib.Idle.Add(new GLib.IdleHandler(() =>
             {
@@ -670,7 +668,7 @@ namespace Ryujinx.Ui
 
                     fileChooser.Dispose();
 
-                    var firmwareVersion = _contentManager.VerifyFirmwarePackage(filename);
+                    SystemVersion firmwareVersion = _contentManager.VerifyFirmwarePackage(filename);
 
                     if (firmwareVersion == null)
                     {
@@ -689,7 +687,7 @@ namespace Ryujinx.Ui
                         return;
                     }
 
-                    var currentVersion = _contentManager.GetCurrentFirmwareVersion();
+                    SystemVersion currentVersion = _contentManager.GetCurrentFirmwareVersion();
 
                     string dialogMessage = $"System version {firmwareVersion.VersionString} will be installed.";
 
