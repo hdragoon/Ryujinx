@@ -23,7 +23,7 @@ namespace Ryujinx.Ui
         {
             builder.Autoconnect(this);
 
-            this.Icon = new Gdk.Pixbuf(Assembly.GetExecutingAssembly(), "Ryujinx.Ui.assets.Icon.png");
+            Icon = new Gdk.Pixbuf(Assembly.GetExecutingAssembly(), "Ryujinx.Ui.assets.Icon.png");
         }
 
         private void OkToggle_Activated(object sender, EventArgs args)

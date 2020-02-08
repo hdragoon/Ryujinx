@@ -817,7 +817,7 @@ namespace Ryujinx.Ui
 
             if (_inputDevice.ActiveId == "disabled" || _profile.ActiveId == "default" || _profile.ActiveId == null) return;
 
-            MessageDialog confirmDialog = GtkDialog.CreateConfirmationDialog("Deleting Profile", "This action is irreversible, Are your sure you want to continue?");
+            MessageDialog confirmDialog = GtkDialog.CreateConfirmationDialog("Deleting Profile", "This action is irreversible, are your sure you want to continue?");
 
             if (confirmDialog.Run() == (int)ResponseType.Yes)
             {
@@ -830,8 +830,6 @@ namespace Ryujinx.Ui
 
                 SetProfiles();
             }
-
-            confirmDialog.Dispose();
         }
 
         private void SaveToggle_Activated(object sender, EventArgs args)
