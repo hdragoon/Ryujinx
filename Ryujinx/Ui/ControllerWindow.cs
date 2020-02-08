@@ -93,11 +93,11 @@ namespace Ryujinx.Ui
 
             _inputConfig = ConfigurationState.Instance.Hid.InputConfig.Value.Find(inputConfig =>
             {
-                if (inputConfig is NpadController controllerConfig)
+                if (inputConfig is ControllerConfig controllerConfig)
                 {
                     return controllerConfig.ControllerId == _controllerId;
                 }
-                else if (inputConfig is NpadKeyboard keyboardConfig)
+                else if (inputConfig is KeyboardConfig keyboardConfig)
                 {
                     return keyboardConfig.ControllerId == _controllerId;
                 }
@@ -168,11 +168,11 @@ namespace Ryujinx.Ui
                 _inputDevice.Append($"controller/{i}", $"Controller/{i} ({GamePad.GetName(i)})");
             }
 
-            if (_inputConfig is NpadKeyboard keyboard)
+            if (_inputConfig is KeyboardConfig keyboard)
             {
                 _inputDevice.SetActiveId($"keyboard/{keyboard.Index}");
             }
-            else if (_inputConfig is NpadController controller)
+            else if (_inputConfig is ControllerConfig controller)
             {
                 _inputDevice.SetActiveId($"controller/{controller.Index}");
             }
@@ -213,11 +213,11 @@ namespace Ryujinx.Ui
 
             SetProfiles();
 
-            if (_inputDevice.ActiveId.StartsWith("keyboard") && _inputConfig is NpadKeyboard)
+            if (_inputDevice.ActiveId.StartsWith("keyboard") && _inputConfig is KeyboardConfig)
             {
                 SetValues(_inputConfig);
             }
-            else if (_inputDevice.ActiveId.StartsWith("controller") && _inputConfig is NpadController)
+            else if (_inputDevice.ActiveId.StartsWith("controller") && _inputConfig is ControllerConfig)
             {
                 SetValues(_inputConfig);
             }
@@ -293,7 +293,7 @@ namespace Ryujinx.Ui
 
         private void SetValues(object config)
         {
-            if (config is NpadKeyboard keyboardConfig)
+            if (config is KeyboardConfig keyboardConfig)
             {
                 _controllerType.SetActiveId(keyboardConfig.ControllerType.ToString());
 
@@ -326,7 +326,7 @@ namespace Ryujinx.Ui
                 _rSl.Label          = keyboardConfig.RightJoycon.ButtonSl.ToString();
                 _rSr.Label          = keyboardConfig.RightJoycon.ButtonSr.ToString();
             }
-            else if (config is NpadController controllerConfig)
+            else if (config is ControllerConfig controllerConfig)
             {
                 _controllerType.SetActiveId(controllerConfig.ControllerType.ToString());
 
@@ -364,7 +364,7 @@ namespace Ryujinx.Ui
         {
             if (_inputDevice.ActiveId.StartsWith("keyboard"))
             {
-                NpadKeyboard keyboardConfig = new NpadKeyboard
+                KeyboardConfig keyboardConfig = new KeyboardConfig
                 {
                     Index          = int.Parse(_inputDevice.ActiveId.Split("/")[1]),
                     ControllerType = Enum.Parse<ControllerType>(_controllerType.ActiveId),
@@ -412,7 +412,7 @@ namespace Ryujinx.Ui
             
             if (_inputDevice.ActiveId.StartsWith("controller"))
             {
-                NpadController controllerConfig = new NpadController
+                ControllerConfig controllerConfig = new ControllerConfig
                 {
                     Index            = int.Parse(_inputDevice.ActiveId.Split("/")[1]),
                     ControllerType   = Enum.Parse<ControllerType>(_controllerType.ActiveId),
@@ -667,7 +667,7 @@ namespace Ryujinx.Ui
             {
                 if (_inputDevice.ActiveId.StartsWith("keyboard"))
                 {
-                    config = new NpadKeyboard
+                    config = new KeyboardConfig
                     {
                         Index          = 0,
                         ControllerType = ControllerType.NpadPair,
@@ -713,7 +713,7 @@ namespace Ryujinx.Ui
                 }
                 else if (_inputDevice.ActiveId.StartsWith("controller"))
                 {
-                    config = new NpadController
+                    config = new ControllerConfig
                     {
                         Index            = 0,
                         ControllerType   = ControllerType.ProController,
@@ -771,13 +771,13 @@ namespace Ryujinx.Ui
                 {
                     try
                     {
-                        config = JsonSerializer.Deserialize<NpadController>(stream, _resolver);
+                        config = JsonSerializer.Deserialize<ControllerConfig>(stream, _resolver);
                     }
                     catch (ArgumentException)
                     {
                         try
                         {
-                            config = JsonSerializer.Deserialize<NpadKeyboard>(stream, _resolver);
+                            config = JsonSerializer.Deserialize<KeyboardConfig>(stream, _resolver);
                         }
                         catch { }
                     }

@@ -156,22 +156,22 @@ namespace Ryujinx.Ui
 
             for (int i = 0; i < numControllers; i++)
             {
-                if (ConfigurationState.Instance.Hid.InputConfig.Value[i] is NpadKeyboard keyboardController)
+                if (ConfigurationState.Instance.Hid.InputConfig.Value[i] is KeyboardConfig keyboardConfig)
                 {
                     // Keyboard Input
-                    KeyboardController keyboardInput = new KeyboardController(keyboardController);
+                    KeyboardController keyboardController = new KeyboardController(keyboardConfig);
 
-                    currentHotkeyButtons[i] = keyboardInput.GetHotkeyButtons();
-                    currentButton[i]        = keyboardInput.GetButtons();
+                    currentHotkeyButtons[i] = keyboardController.GetHotkeyButtons();
+                    currentButton[i]        = keyboardController.GetButtons();
 
 
                     if (ConfigurationState.Instance.Hid.EnableKeyboard)
                     {
-                        hidKeyboard[i] = keyboardInput.GetKeysDown();
+                        hidKeyboard[i] = keyboardController.GetKeysDown();
                     }
 
-                    (leftJoystickDx[i],  leftJoystickDy[i])  = keyboardInput.GetLeftStick();
-                    (rightJoystickDx[i], rightJoystickDy[i]) = keyboardInput.GetRightStick();
+                    (leftJoystickDx[i],  leftJoystickDy[i])  = keyboardController.GetLeftStick();
+                    (rightJoystickDx[i], rightJoystickDy[i]) = keyboardController.GetRightStick();
 
                     if (hidKeyboard[i] == null)
                     {
@@ -196,15 +196,15 @@ namespace Ryujinx.Ui
 
                     _prevHotkeyButtons[i] = currentHotkeyButtons[i];
                 }
-                else if (ConfigurationState.Instance.Hid.InputConfig.Value[i] is Common.Configuration.Hid.NpadController joystickController)
+                else if (ConfigurationState.Instance.Hid.InputConfig.Value[i] is ControllerConfig controllerConfig)
                 {
                     // Controller Input
-                    JoystickController controllerInput = new JoystickController(joystickController);
+                    JoystickController joystickController = new JoystickController(controllerConfig);
 
-                    currentButton[i] |= controllerInput.GetButtons();
+                    currentButton[i] |= joystickController.GetButtons();
 
-                    (leftJoystickDx[i],  leftJoystickDy[i])  = controllerInput.GetLeftStick();
-                    (rightJoystickDx[i], rightJoystickDy[i]) = controllerInput.GetRightStick();
+                    (leftJoystickDx[i],  leftJoystickDy[i])  = joystickController.GetLeftStick();
+                    (rightJoystickDx[i], rightJoystickDy[i]) = joystickController.GetRightStick();
                 }
 
                 leftJoystick[i] = new JoystickPosition

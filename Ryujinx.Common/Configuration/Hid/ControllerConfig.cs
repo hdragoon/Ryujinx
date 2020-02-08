@@ -1,6 +1,6 @@
 ﻿namespace Ryujinx.Common.Configuration.Hid
 {
-    public class NpadController
+    public class ControllerConfig
     {
         /// <summary>
         /// Controller Device Index

@@ -376,11 +376,11 @@ namespace Ryujinx.Ui
         {
             foreach (object controllerObject in ConfigurationState.Instance.Hid.InputConfig.Value)
             {
-                if (controllerObject is NpadKeyboard keyboard)
+                if (controllerObject is KeyboardConfig keyboard)
                 {
                     device.Hid.InitializeController(keyboard.ControllerId, keyboard.ControllerType);
                 }
-                else if (controllerObject is NpadController controller)
+                else if (controllerObject is ControllerConfig controller)
                 {
                     device.Hid.InitializeController(controller.ControllerId, controller.ControllerType);
                 }

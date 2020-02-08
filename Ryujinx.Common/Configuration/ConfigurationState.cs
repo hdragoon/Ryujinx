@@ -274,16 +274,16 @@ namespace Ryujinx.Configuration
 
         public ConfigurationFileFormat ToFileFormat()
         {
-            List<NpadController> controllerConfigList = new List<NpadController>();
-            List<NpadKeyboard>   keyboardConfigList   = new List<NpadKeyboard>();
+            List<ControllerConfig> controllerConfigList = new List<ControllerConfig>();
+            List<KeyboardConfig>   keyboardConfigList   = new List<KeyboardConfig>();
 
             foreach (object inputConfig in Hid.InputConfig.Value)
             {
-                if (inputConfig is NpadController controllerConfig)
+                if (inputConfig is ControllerConfig controllerConfig)
                 {
                     controllerConfigList.Add(controllerConfig);
                 }
-                else if (inputConfig is NpadKeyboard keyboardConfig)
+                else if (inputConfig is KeyboardConfig keyboardConfig)
                 {
                     keyboardConfigList.Add(keyboardConfig);
                 }
@@ -328,7 +328,7 @@ namespace Ryujinx.Configuration
                 CustomThemePath           = Ui.CustomThemePath,
                 EnableKeyboard            = Hid.EnableKeyboard,
                 KeyboardConfig            = keyboardConfigList,
-                JoystickConfig            = controllerConfigList
+                ControllerConfig          = controllerConfigList
             };
 
             return configurationFile;
@@ -371,7 +371,7 @@ namespace Ryujinx.Configuration
 
             Hid.InputConfig.Value = new List<object>
             {
-                new NpadKeyboard
+                new KeyboardConfig
                 {
                     Index          = 0,
                     ControllerType = ControllerType.NpadPair,
@@ -430,11 +430,11 @@ namespace Ryujinx.Configuration
             }
 
             List<object> inputConfig = new List<object>();
-            foreach (NpadController controllerConfig in configurationFileFormat.JoystickConfig)
+            foreach (ControllerConfig controllerConfig in configurationFileFormat.ControllerConfig)
             {
                 inputConfig.Add(controllerConfig);
             }
-            foreach (NpadKeyboard keyboardConfig in configurationFileFormat.KeyboardConfig)
+            foreach (KeyboardConfig keyboardConfig in configurationFileFormat.KeyboardConfig)
             {
                 inputConfig.Add(keyboardConfig);
             }

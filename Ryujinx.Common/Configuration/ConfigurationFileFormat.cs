@@ -135,12 +135,12 @@ namespace Ryujinx.Configuration
         /// <summary>
         /// Keyboard control bindings
         /// </summary>
-        public List<NpadKeyboard> KeyboardConfig { get; set; }
+        public List<KeyboardConfig> KeyboardConfig { get; set; }
 
         /// <summary>
         /// Controller control bindings
         /// </summary>
-        public List<NpadController> JoystickConfig { get; set; }
+        public List<ControllerConfig> ControllerConfig { get; set; }
 
         /// <summary>
         /// Loads a configuration file from disk
