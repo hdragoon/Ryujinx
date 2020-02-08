@@ -42,9 +42,6 @@ namespace Ryujinx.Ui
         [GUI] Label        _custThemePathLabel;
         [GUI] TreeView     _gameDirsBox;
         [GUI] Entry        _addGameDirBox;
-        [GUI] ToggleButton _addDir;
-        [GUI] ToggleButton _browseDir;
-        [GUI] ToggleButton _removeDir;
         [GUI] Entry        _logPath;
         [GUI] Entry        _graphicsShadersDumpPath;
         [GUI] ToggleButton _configureController1;
@@ -193,22 +190,21 @@ namespace Ryujinx.Ui
             {
                 _gameDirsBoxStore.AppendValues(_addGameDirBox.Buffer.Text);
             }
-
-            _addDir.SetStateFlags(0, true);
-        }
-
-        private void BrowseDir_Pressed(object sender, EventArgs args)
-        {
-            FileChooserDialog fileChooser = new FileChooserDialog("Choose the game directory to add to the list", this, FileChooserAction.SelectFolder, "Cancel", ResponseType.Cancel, "Add", ResponseType.Accept);
-
-            if (fileChooser.Run() == (int)ResponseType.Accept)
+            else
             {
-                _gameDirsBoxStore.AppendValues(fileChooser.Filename);
+                FileChooserDialog fileChooser = new FileChooserDialog("Choose the game directory to add to the list", this, FileChooserAction.SelectFolder, "Cancel", ResponseType.Cancel, "Add", ResponseType.Accept);
+
+                if (fileChooser.Run() == (int)ResponseType.Accept)
+                {
+                    _gameDirsBoxStore.AppendValues(fileChooser.Filename);
+                }
+
+                fileChooser.Dispose();
             }
 
-            fileChooser.Dispose();
+            _addGameDirBox.Buffer.Text = "";
 
-            _browseDir.SetStateFlags(0, true);
+            ((ToggleButton)sender).SetStateFlags(0, true);
         }
 
         private void RemoveDir_Pressed(object sender, EventArgs args)
@@ -220,7 +216,7 @@ namespace Ryujinx.Ui
                 _gameDirsBoxStore.Remove(ref treeIter);
             }
 
-            _removeDir.SetStateFlags(0, true);
+            ((ToggleButton)sender).SetStateFlags(0, true);
         }
 
         private void CustThemeToggle_Activated(object sender, EventArgs args)

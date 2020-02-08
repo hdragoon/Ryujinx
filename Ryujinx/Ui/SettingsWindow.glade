@@ -68,67 +68,12 @@
                               </packing>
                             </child>
                             <child>
-                              <object class="GtkBox" id="box1">
+                              <object class="GtkBox" id="General">
                                 <property name="visible">True</property>
                                 <property name="can_focus">False</property>
+                                <property name="margin_left">10</property>
+                                <property name="margin_right">10</property>
                                 <property name="orientation">vertical</property>
-                                <child>
-                                  <object class="GtkBox">
-                                    <property name="visible">True</property>
-                                    <property name="can_focus">False</property>
-                                    <child>
-                                      <object class="GtkLabel">
-                                        <property name="visible">True</property>
-                                        <property name="can_focus">False</property>
-                                        <property name="tooltip_text" translatable="yes">Change System Language</property>
-                                        <property name="halign">end</property>
-                                        <property name="label" translatable="yes">System Language:</property>
-                                      </object>
-                                      <packing>
-                                        <property name="expand">False</property>
-                                        <property name="fill">True</property>
-                                        <property name="position">0</property>
-                                      </packing>
-                                    </child>
-                                    <child>
-                                      <object class="GtkComboBoxText" id="_systemLanguageSelect">
-                                        <property name="visible">True</property>
-                                        <property name="can_focus">False</property>
-                                        <property name="tooltip_text" translatable="yes">Change System Language</property>
-                                        <property name="margin_left">5</property>
-                                        <items>
-                                          <item id="AmericanEnglish" translatable="yes">American English</item>
-                                          <item id="BritishEnglish" translatable="yes">British English</item>
-                                          <item id="CanadianFrench" translatable="yes">Canadian French</item>
-                                          <item id="Chinese" translatable="yes">Chinese</item>
-                                          <item id="Dutch" translatable="yes">Dutch</item>
-                                          <item id="French" translatable="yes">French</item>
-                                          <item id="German" translatable="yes">German</item>
-                                          <item id="Italian" translatable="yes">Italian</item>
-                                          <item id="Japanese" translatable="yes">Japanese</item>
-                                          <item id="Korean" translatable="yes">Korean</item>
-                                          <item id="LatinAmericanSpanish" translatable="yes">Latin American Spanish</item>
-                                          <item id="Portuguese" translatable="yes">Portuguese</item>
-                                          <item id="Russian" translatable="yes">Russian</item>
-                                          <item id="SimplifiedChinese" translatable="yes">Simplified Chinese</item>
-                                          <item id="Spanish" translatable="yes">Spanish</item>
-                                          <item id="Taiwanese" translatable="yes">Taiwanese</item>
-                                          <item id="TraditionalChinese" translatable="yes">Traditional Chinese</item>
-                                        </items>
-                                      </object>
-                                      <packing>
-                                        <property name="expand">False</property>
-                                        <property name="fill">True</property>
-                                        <property name="position">1</property>
-                                      </packing>
-                                    </child>
-                                  </object>
-                                  <packing>
-                                    <property name="expand">False</property>
-                                    <property name="fill">True</property>
-                                    <property name="position">0</property>
-                                  </packing>
-                                </child>
                                 <child>
                                   <object class="GtkCheckButton" id="_discordToggle">
                                     <property name="label" translatable="yes">Enable Discord Rich Presence</property>
@@ -264,23 +209,6 @@
                                         <property name="expand">False</property>
                                         <property name="fill">True</property>
                                         <property name="position">1</property>
-                                      </packing>
-                                    </child>
-                                    <child>
-                                      <object class="GtkToggleButton" id="_browseDir">
-                                        <property name="label" translatable="yes">Browse...</property>
-                                        <property name="width_request">80</property>
-                                        <property name="visible">True</property>
-                                        <property name="can_focus">True</property>
-                                        <property name="receives_default">True</property>
-                                        <property name="tooltip_text" translatable="yes">Browse for a game directory</property>
-                                        <property name="margin_left">5</property>
-                                        <signal name="toggled" handler="BrowseDir_Pressed" swapped="no"/>
-                                      </object>
-                                      <packing>
-                                        <property name="expand">False</property>
-                                        <property name="fill">True</property>
-                                        <property name="position">2</property>
                                       </packing>
                                     </child>
                                     <child>
@@ -1122,7 +1050,6 @@
                                 <property name="visible">True</property>
                                 <property name="can_focus">False</property>
                                 <property name="halign">start</property>
-                                <property name="margin_left">5</property>
                                 <property name="margin_bottom">5</property>
                                 <property name="label" translatable="yes">Core</property>
                                 <attributes>
@@ -1143,6 +1070,64 @@
                                 <property name="margin_right">10</property>
                                 <property name="orientation">vertical</property>
                                 <child>
+                                  <object class="GtkBox">
+                                    <property name="visible">True</property>
+                                    <property name="can_focus">False</property>
+                                    <child>
+                                      <object class="GtkLabel">
+                                        <property name="visible">True</property>
+                                        <property name="can_focus">False</property>
+                                        <property name="tooltip_text" translatable="yes">Change System Language</property>
+                                        <property name="halign">end</property>
+                                        <property name="label" translatable="yes">System Language:</property>
+                                      </object>
+                                      <packing>
+                                        <property name="expand">False</property>
+                                        <property name="fill">True</property>
+                                        <property name="padding">5</property>
+                                        <property name="position">0</property>
+                                      </packing>
+                                    </child>
+                                    <child>
+                                      <object class="GtkComboBoxText" id="_systemLanguageSelect">
+                                        <property name="visible">True</property>
+                                        <property name="can_focus">False</property>
+                                        <property name="tooltip_text" translatable="yes">Change System Language</property>
+                                        <items>
+                                          <item id="AmericanEnglish" translatable="yes">American English</item>
+                                          <item id="BritishEnglish" translatable="yes">British English</item>
+                                          <item id="CanadianFrench" translatable="yes">Canadian French</item>
+                                          <item id="Chinese" translatable="yes">Chinese</item>
+                                          <item id="Dutch" translatable="yes">Dutch</item>
+                                          <item id="French" translatable="yes">French</item>
+                                          <item id="German" translatable="yes">German</item>
+                                          <item id="Italian" translatable="yes">Italian</item>
+                                          <item id="Japanese" translatable="yes">Japanese</item>
+                                          <item id="Korean" translatable="yes">Korean</item>
+                                          <item id="LatinAmericanSpanish" translatable="yes">Latin American Spanish</item>
+                                          <item id="Portuguese" translatable="yes">Portuguese</item>
+                                          <item id="Russian" translatable="yes">Russian</item>
+                                          <item id="SimplifiedChinese" translatable="yes">Simplified Chinese</item>
+                                          <item id="Spanish" translatable="yes">Spanish</item>
+                                          <item id="Taiwanese" translatable="yes">Taiwanese</item>
+                                          <item id="TraditionalChinese" translatable="yes">Traditional Chinese</item>
+                                        </items>
+                                      </object>
+                                      <packing>
+                                        <property name="expand">False</property>
+                                        <property name="fill">True</property>
+                                        <property name="position">1</property>
+                                      </packing>
+                                    </child>
+                                  </object>
+                                  <packing>
+                                    <property name="expand">False</property>
+                                    <property name="fill">True</property>
+                                    <property name="padding">5</property>
+                                    <property name="position">0</property>
+                                  </packing>
+                                </child>
+                                <child>
                                   <object class="GtkCheckButton" id="_vSyncToggle">
                                     <property name="label" translatable="yes">Enable VSync</property>
                                     <property name="visible">True</property>
@@ -1157,7 +1142,7 @@
                                   <packing>
                                     <property name="expand">False</property>
                                     <property name="fill">True</property>
-                                    <property name="position">0</property>
+                                    <property name="position">1</property>
                                   </packing>
                                 </child>
                                 <child>
@@ -1175,7 +1160,7 @@
                                   <packing>
                                     <property name="expand">False</property>
                                     <property name="fill">True</property>
-                                    <property name="position">1</property>
+                                    <property name="position">2</property>
                                   </packing>
                                 </child>
                                 <child>
@@ -1193,7 +1178,7 @@
                                   <packing>
                                     <property name="expand">False</property>
                                     <property name="fill">True</property>
-                                    <property name="position">2</property>
+                                    <property name="position">3</property>
                                   </packing>
                                 </child>
                                 <child>
@@ -1233,7 +1218,7 @@
                                     <property name="expand">False</property>
                                     <property name="fill">True</property>
                                     <property name="padding">5</property>
-                                    <property name="position">4</property>
+                                    <property name="position">5</property>
                                   </packing>
                                 </child>
                               </object>
@@ -1269,6 +1254,7 @@
                           <object class="GtkBox" id="CatHacks">
                             <property name="visible">True</property>
                             <property name="can_focus">False</property>
+                            <property name="valign">start</property>
                             <property name="margin_left">5</property>
                             <property name="margin_right">5</property>
                             <property name="orientation">vertical</property>
@@ -1380,40 +1366,22 @@
                         <property name="margin_top">5</property>
                         <property name="orientation">vertical</property>
                         <child>
-                          <object class="GtkLabel">
-                            <property name="visible">True</property>
-                            <property name="can_focus">False</property>
-                            <property name="halign">start</property>
-                            <property name="margin_bottom">5</property>
-                            <property name="label" translatable="yes">Logging</property>
-                            <attributes>
-                              <attribute name="weight" value="bold"/>
-                            </attributes>
-                          </object>
-                          <packing>
-                            <property name="expand">False</property>
-                            <property name="fill">True</property>
-                            <property name="position">0</property>
-                          </packing>
-                        </child>
-                        <child>
-                          <object class="GtkBox">
+                          <object class="GtkBox" id="CatLogging">
                             <property name="visible">True</property>
                             <property name="can_focus">False</property>
                             <property name="margin_left">5</property>
                             <property name="margin_right">5</property>
                             <property name="orientation">vertical</property>
                             <child>
-                              <object class="GtkCheckButton" id="_fileLogToggle">
-                                <property name="label" translatable="yes">Enable Logging to File</property>
+                              <object class="GtkLabel">
                                 <property name="visible">True</property>
-                                <property name="can_focus">True</property>
-                                <property name="receives_default">False</property>
-                                <property name="tooltip_text" translatable="yes">Enables or disables logging to a file on disk</property>
+                                <property name="can_focus">False</property>
                                 <property name="halign">start</property>
-                                <property name="margin_top">5</property>
                                 <property name="margin_bottom">5</property>
-                                <property name="draw_indicator">True</property>
+                                <property name="label" translatable="yes">Logging</property>
+                                <attributes>
+                                  <attribute name="weight" value="bold"/>
+                                </attributes>
                               </object>
                               <packing>
                                 <property name="expand">False</property>
@@ -1422,218 +1390,252 @@
                               </packing>
                             </child>
                             <child>
-                              <object class="GtkBox">
+                              <object class="GtkBox" id="Loggging">
                                 <property name="visible">True</property>
                                 <property name="can_focus">False</property>
-                                <property name="margin_bottom">10</property>
+                                <property name="valign">start</property>
+                                <property name="margin_left">10</property>
+                                <property name="margin_right">10</property>
+                                <property name="orientation">vertical</property>
                                 <child>
-                                  <object class="GtkLabel">
+                                  <object class="GtkCheckButton" id="_fileLogToggle">
+                                    <property name="label" translatable="yes">Enable Logging to File</property>
+                                    <property name="visible">True</property>
+                                    <property name="can_focus">True</property>
+                                    <property name="receives_default">False</property>
+                                    <property name="tooltip_text" translatable="yes">Enables or disables logging to a file on disk</property>
+                                    <property name="halign">start</property>
+                                    <property name="margin_top">5</property>
+                                    <property name="margin_bottom">5</property>
+                                    <property name="draw_indicator">True</property>
+                                  </object>
+                                  <packing>
+                                    <property name="expand">False</property>
+                                    <property name="fill">True</property>
+                                    <property name="position">0</property>
+                                  </packing>
+                                </child>
+                                <child>
+                                  <object class="GtkBox">
                                     <property name="visible">True</property>
                                     <property name="can_focus">False</property>
-                                    <property name="tooltip_text" translatable="yes">Location of the log file</property>
-                                    <property name="label" translatable="yes">Log File Location:</property>
+                                    <property name="margin_bottom">10</property>
+                                    <child>
+                                      <object class="GtkLabel">
+                                        <property name="visible">True</property>
+                                        <property name="can_focus">False</property>
+                                        <property name="tooltip_text" translatable="yes">Location of the log file</property>
+                                        <property name="label" translatable="yes">Log File Location:</property>
+                                      </object>
+                                      <packing>
+                                        <property name="expand">False</property>
+                                        <property name="fill">True</property>
+                                        <property name="padding">5</property>
+                                        <property name="position">0</property>
+                                      </packing>
+                                    </child>
+                                    <child>
+                                      <object class="GtkEntry" id="_logPath">
+                                        <property name="visible">True</property>
+                                        <property name="can_focus">True</property>
+                                        <property name="tooltip_text" translatable="yes">Location of the log file</property>
+                                        <property name="valign">center</property>
+                                        <property name="editable">False</property>
+                                        <property name="caps_lock_warning">False</property>
+                                      </object>
+                                      <packing>
+                                        <property name="expand">True</property>
+                                        <property name="fill">True</property>
+                                        <property name="position">1</property>
+                                      </packing>
+                                    </child>
                                   </object>
                                   <packing>
                                     <property name="expand">False</property>
                                     <property name="fill">True</property>
                                     <property name="padding">5</property>
-                                    <property name="position">0</property>
+                                    <property name="position">1</property>
                                   </packing>
                                 </child>
                                 <child>
-                                  <object class="GtkEntry" id="_logPath">
+                                  <object class="GtkCheckButton" id="_debugLogToggle">
+                                    <property name="label" translatable="yes">Enable Debug Logs</property>
                                     <property name="visible">True</property>
                                     <property name="can_focus">True</property>
-                                    <property name="tooltip_text" translatable="yes">Location of the log file</property>
-                                    <property name="valign">center</property>
-                                    <property name="editable">False</property>
-                                    <property name="caps_lock_warning">False</property>
+                                    <property name="receives_default">False</property>
+                                    <property name="tooltip_text" translatable="yes">Enables printing debug log messages</property>
+                                    <property name="halign">start</property>
+                                    <property name="margin_top">5</property>
+                                    <property name="margin_bottom">5</property>
+                                    <property name="draw_indicator">True</property>
                                   </object>
                                   <packing>
-                                    <property name="expand">True</property>
+                                    <property name="expand">False</property>
                                     <property name="fill">True</property>
-                                    <property name="position">1</property>
+                                    <property name="position">2</property>
+                                  </packing>
+                                </child>
+                                <child>
+                                  <object class="GtkCheckButton" id="_stubLogToggle">
+                                    <property name="label" translatable="yes">Enable Stub Logs</property>
+                                    <property name="visible">True</property>
+                                    <property name="can_focus">True</property>
+                                    <property name="receives_default">False</property>
+                                    <property name="tooltip_text" translatable="yes">Enables printing stub log messages</property>
+                                    <property name="halign">start</property>
+                                    <property name="margin_top">5</property>
+                                    <property name="margin_bottom">5</property>
+                                    <property name="draw_indicator">True</property>
+                                  </object>
+                                  <packing>
+                                    <property name="expand">False</property>
+                                    <property name="fill">True</property>
+                                    <property name="position">3</property>
+                                  </packing>
+                                </child>
+                                <child>
+                                  <object class="GtkCheckButton" id="_infoLogToggle">
+                                    <property name="label" translatable="yes">Enable Info Logs</property>
+                                    <property name="visible">True</property>
+                                    <property name="can_focus">True</property>
+                                    <property name="receives_default">False</property>
+                                    <property name="tooltip_text" translatable="yes">Enables printing info log messages</property>
+                                    <property name="halign">start</property>
+                                    <property name="margin_top">5</property>
+                                    <property name="margin_bottom">5</property>
+                                    <property name="draw_indicator">True</property>
+                                  </object>
+                                  <packing>
+                                    <property name="expand">False</property>
+                                    <property name="fill">True</property>
+                                    <property name="position">4</property>
+                                  </packing>
+                                </child>
+                                <child>
+                                  <object class="GtkCheckButton" id="_warningLogToggle">
+                                    <property name="label" translatable="yes">Enable Warning Logs</property>
+                                    <property name="visible">True</property>
+                                    <property name="can_focus">True</property>
+                                    <property name="receives_default">False</property>
+                                    <property name="tooltip_text" translatable="yes">Enables printing warning log messages</property>
+                                    <property name="halign">start</property>
+                                    <property name="margin_top">5</property>
+                                    <property name="margin_bottom">5</property>
+                                    <property name="draw_indicator">True</property>
+                                  </object>
+                                  <packing>
+                                    <property name="expand">False</property>
+                                    <property name="fill">True</property>
+                                    <property name="position">5</property>
+                                  </packing>
+                                </child>
+                                <child>
+                                  <object class="GtkCheckButton" id="_errorLogToggle">
+                                    <property name="label" translatable="yes">Enable Error Logs</property>
+                                    <property name="visible">True</property>
+                                    <property name="can_focus">True</property>
+                                    <property name="receives_default">False</property>
+                                    <property name="tooltip_text" translatable="yes">Enables printing error log messages</property>
+                                    <property name="halign">start</property>
+                                    <property name="margin_top">5</property>
+                                    <property name="margin_bottom">5</property>
+                                    <property name="draw_indicator">True</property>
+                                  </object>
+                                  <packing>
+                                    <property name="expand">False</property>
+                                    <property name="fill">True</property>
+                                    <property name="position">6</property>
+                                  </packing>
+                                </child>
+                                <child>
+                                  <object class="GtkCheckButton" id="_guestLogToggle">
+                                    <property name="label" translatable="yes">Enable Guest Logs</property>
+                                    <property name="visible">True</property>
+                                    <property name="can_focus">True</property>
+                                    <property name="receives_default">False</property>
+                                    <property name="tooltip_text" translatable="yes">Enables printing guest log messages</property>
+                                    <property name="halign">start</property>
+                                    <property name="margin_top">5</property>
+                                    <property name="margin_bottom">5</property>
+                                    <property name="draw_indicator">True</property>
+                                  </object>
+                                  <packing>
+                                    <property name="expand">False</property>
+                                    <property name="fill">True</property>
+                                    <property name="position">7</property>
+                                  </packing>
+                                </child>
+                                <child>
+                                  <object class="GtkCheckButton" id="_fsAccessLogToggle">
+                                    <property name="label" translatable="yes">Enable Fs Access Logs</property>
+                                    <property name="visible">True</property>
+                                    <property name="can_focus">True</property>
+                                    <property name="receives_default">False</property>
+                                    <property name="tooltip_text" translatable="yes">Enables printing fs access log messages</property>
+                                    <property name="halign">start</property>
+                                    <property name="margin_top">5</property>
+                                    <property name="margin_bottom">5</property>
+                                    <property name="draw_indicator">True</property>
+                                  </object>
+                                  <packing>
+                                    <property name="expand">False</property>
+                                    <property name="fill">True</property>
+                                    <property name="position">8</property>
+                                  </packing>
+                                </child>
+                                <child>
+                                  <object class="GtkBox">
+                                    <property name="visible">True</property>
+                                    <property name="can_focus">False</property>
+                                    <child>
+                                      <object class="GtkLabel">
+                                        <property name="visible">True</property>
+                                        <property name="can_focus">False</property>
+                                        <property name="tooltip_text" translatable="yes">Enables FS access log output to the console. Possible modes are 0-3</property>
+                                        <property name="label" translatable="yes">Fs Global Access Log Mode:</property>
+                                      </object>
+                                      <packing>
+                                        <property name="expand">False</property>
+                                        <property name="fill">True</property>
+                                        <property name="padding">5</property>
+                                        <property name="position">0</property>
+                                      </packing>
+                                    </child>
+                                    <child>
+                                      <object class="GtkSpinButton">
+                                        <property name="visible">True</property>
+                                        <property name="can_focus">True</property>
+                                        <property name="tooltip_text" translatable="yes">Enables FS access log output to the console. Possible modes are 0-3</property>
+                                        <property name="text" translatable="yes">0</property>
+                                        <property name="adjustment">_fsLogSpinAdjustment</property>
+                                      </object>
+                                      <packing>
+                                        <property name="expand">True</property>
+                                        <property name="fill">True</property>
+                                        <property name="position">1</property>
+                                      </packing>
+                                    </child>
+                                  </object>
+                                  <packing>
+                                    <property name="expand">False</property>
+                                    <property name="fill">True</property>
+                                    <property name="padding">5</property>
+                                    <property name="position">9</property>
                                   </packing>
                                 </child>
                               </object>
                               <packing>
-                                <property name="expand">False</property>
+                                <property name="expand">True</property>
                                 <property name="fill">True</property>
-                                <property name="padding">5</property>
                                 <property name="position">1</property>
-                              </packing>
-                            </child>
-                            <child>
-                              <object class="GtkCheckButton" id="_debugLogToggle">
-                                <property name="label" translatable="yes">Enable Debug Logs</property>
-                                <property name="visible">True</property>
-                                <property name="can_focus">True</property>
-                                <property name="receives_default">False</property>
-                                <property name="tooltip_text" translatable="yes">Enables printing debug log messages</property>
-                                <property name="halign">start</property>
-                                <property name="margin_top">5</property>
-                                <property name="margin_bottom">5</property>
-                                <property name="draw_indicator">True</property>
-                              </object>
-                              <packing>
-                                <property name="expand">False</property>
-                                <property name="fill">True</property>
-                                <property name="position">2</property>
-                              </packing>
-                            </child>
-                            <child>
-                              <object class="GtkCheckButton" id="_stubLogToggle">
-                                <property name="label" translatable="yes">Enable Stub Logs</property>
-                                <property name="visible">True</property>
-                                <property name="can_focus">True</property>
-                                <property name="receives_default">False</property>
-                                <property name="tooltip_text" translatable="yes">Enables printing stub log messages</property>
-                                <property name="halign">start</property>
-                                <property name="margin_top">5</property>
-                                <property name="margin_bottom">5</property>
-                                <property name="draw_indicator">True</property>
-                              </object>
-                              <packing>
-                                <property name="expand">False</property>
-                                <property name="fill">True</property>
-                                <property name="position">3</property>
-                              </packing>
-                            </child>
-                            <child>
-                              <object class="GtkCheckButton" id="_infoLogToggle">
-                                <property name="label" translatable="yes">Enable Info Logs</property>
-                                <property name="visible">True</property>
-                                <property name="can_focus">True</property>
-                                <property name="receives_default">False</property>
-                                <property name="tooltip_text" translatable="yes">Enables printing info log messages</property>
-                                <property name="halign">start</property>
-                                <property name="margin_top">5</property>
-                                <property name="margin_bottom">5</property>
-                                <property name="draw_indicator">True</property>
-                              </object>
-                              <packing>
-                                <property name="expand">False</property>
-                                <property name="fill">True</property>
-                                <property name="position">4</property>
-                              </packing>
-                            </child>
-                            <child>
-                              <object class="GtkCheckButton" id="_warningLogToggle">
-                                <property name="label" translatable="yes">Enable Warning Logs</property>
-                                <property name="visible">True</property>
-                                <property name="can_focus">True</property>
-                                <property name="receives_default">False</property>
-                                <property name="tooltip_text" translatable="yes">Enables printing warning log messages</property>
-                                <property name="halign">start</property>
-                                <property name="margin_top">5</property>
-                                <property name="margin_bottom">5</property>
-                                <property name="draw_indicator">True</property>
-                              </object>
-                              <packing>
-                                <property name="expand">False</property>
-                                <property name="fill">True</property>
-                                <property name="position">5</property>
-                              </packing>
-                            </child>
-                            <child>
-                              <object class="GtkCheckButton" id="_errorLogToggle">
-                                <property name="label" translatable="yes">Enable Error Logs</property>
-                                <property name="visible">True</property>
-                                <property name="can_focus">True</property>
-                                <property name="receives_default">False</property>
-                                <property name="tooltip_text" translatable="yes">Enables printing error log messages</property>
-                                <property name="halign">start</property>
-                                <property name="margin_top">5</property>
-                                <property name="margin_bottom">5</property>
-                                <property name="draw_indicator">True</property>
-                              </object>
-                              <packing>
-                                <property name="expand">False</property>
-                                <property name="fill">True</property>
-                                <property name="position">6</property>
-                              </packing>
-                            </child>
-                            <child>
-                              <object class="GtkCheckButton" id="_guestLogToggle">
-                                <property name="label" translatable="yes">Enable Guest Logs</property>
-                                <property name="visible">True</property>
-                                <property name="can_focus">True</property>
-                                <property name="receives_default">False</property>
-                                <property name="tooltip_text" translatable="yes">Enables printing guest log messages</property>
-                                <property name="halign">start</property>
-                                <property name="margin_top">5</property>
-                                <property name="margin_bottom">5</property>
-                                <property name="draw_indicator">True</property>
-                              </object>
-                              <packing>
-                                <property name="expand">False</property>
-                                <property name="fill">True</property>
-                                <property name="position">7</property>
-                              </packing>
-                            </child>
-                            <child>
-                              <object class="GtkCheckButton" id="_fsAccessLogToggle">
-                                <property name="label" translatable="yes">Enable Fs Access Logs</property>
-                                <property name="visible">True</property>
-                                <property name="can_focus">True</property>
-                                <property name="receives_default">False</property>
-                                <property name="tooltip_text" translatable="yes">Enables printing fs access log messages</property>
-                                <property name="halign">start</property>
-                                <property name="margin_top">5</property>
-                                <property name="margin_bottom">5</property>
-                                <property name="draw_indicator">True</property>
-                              </object>
-                              <packing>
-                                <property name="expand">False</property>
-                                <property name="fill">True</property>
-                                <property name="position">8</property>
-                              </packing>
-                            </child>
-                            <child>
-                              <object class="GtkBox">
-                                <property name="visible">True</property>
-                                <property name="can_focus">False</property>
-                                <child>
-                                  <object class="GtkLabel">
-                                    <property name="visible">True</property>
-                                    <property name="can_focus">False</property>
-                                    <property name="tooltip_text" translatable="yes">Enables FS access log output to the console. Possible modes are 0-3</property>
-                                    <property name="label" translatable="yes">Fs Global Access Log Mode:</property>
-                                  </object>
-                                  <packing>
-                                    <property name="expand">False</property>
-                                    <property name="fill">True</property>
-                                    <property name="padding">5</property>
-                                    <property name="position">0</property>
-                                  </packing>
-                                </child>
-                                <child>
-                                  <object class="GtkSpinButton">
-                                    <property name="visible">True</property>
-                                    <property name="can_focus">True</property>
-                                    <property name="tooltip_text" translatable="yes">Enables FS access log output to the console. Possible modes are 0-3</property>
-                                    <property name="text" translatable="yes">0</property>
-                                    <property name="adjustment">_fsLogSpinAdjustment</property>
-                                  </object>
-                                  <packing>
-                                    <property name="expand">True</property>
-                                    <property name="fill">True</property>
-                                    <property name="position">1</property>
-                                  </packing>
-                                </child>
-                              </object>
-                              <packing>
-                                <property name="expand">False</property>
-                                <property name="fill">True</property>
-                                <property name="padding">5</property>
-                                <property name="position">9</property>
                               </packing>
                             </child>
                           </object>
                           <packing>
-                            <property name="expand">True</property>
+                            <property name="expand">False</property>
                             <property name="fill">True</property>
-                            <property name="position">1</property>
+                            <property name="padding">5</property>
+                            <property name="position">0</property>
                           </packing>
                         </child>
                       </object>
