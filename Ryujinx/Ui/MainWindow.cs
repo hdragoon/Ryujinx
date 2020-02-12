@@ -374,16 +374,9 @@ namespace Ryujinx.Ui
 
         private void CreateGameWindow(HLE.Switch device)
         {
-            foreach (object controllerObject in ConfigurationState.Instance.Hid.InputConfig.Value)
+            foreach (InputConfig inputConfig in ConfigurationState.Instance.Hid.InputConfig.Value)
             {
-                if (controllerObject is KeyboardConfig keyboard)
-                {
-                    device.Hid.InitializeController(keyboard.ControllerId, keyboard.ControllerType);
-                }
-                else if (controllerObject is ControllerConfig controller)
-                {
-                    device.Hid.InitializeController(controller.ControllerId, controller.ControllerType);
-                }
+                device.Hid.InitializeController(inputConfig.ControllerId, inputConfig.ControllerType);
             }
 
             using (_screen = new GlScreen(device))
@@ -422,6 +415,7 @@ namespace Ryujinx.Ui
                 });
             }
         }
+
         public static void SaveConfig()
         {
             ConfigurationState.Instance.ToFileFormat().SaveConfig(System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Config.json"));

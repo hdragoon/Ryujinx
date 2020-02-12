@@ -19,11 +19,11 @@ namespace Ryujinx.Ui
 {
     public class ControllerWindow : Window
     {
-        private static ControllerId _controllerId;
-        private static object _inputConfig;
-        private static bool _isWaitingForInput;
-        private static IJsonFormatterResolver _resolver;
-        private static VirtualFileSystem _virtualFileSystem;
+        private ControllerId _controllerId;
+        private InputConfig _inputConfig;
+        private bool _isWaitingForInput;
+        private IJsonFormatterResolver _resolver;
+        private VirtualFileSystem _virtualFileSystem;
 
 #pragma warning disable CS0649
 #pragma warning disable IDE0044
@@ -91,21 +91,7 @@ namespace Ryujinx.Ui
             _controllerId      = controllerId;
             _virtualFileSystem = virtualFileSystem;
 
-            _inputConfig = ConfigurationState.Instance.Hid.InputConfig.Value.Find(inputConfig =>
-            {
-                if (inputConfig is ControllerConfig controllerConfig)
-                {
-                    return controllerConfig.ControllerId == _controllerId;
-                }
-                else if (inputConfig is KeyboardConfig keyboardConfig)
-                {
-                    return keyboardConfig.ControllerId == _controllerId;
-                }
-                else
-                {
-                    return false;
-                }
-            });
+            _inputConfig = ConfigurationState.Instance.Hid.InputConfig.Value.Find(inputConfig => inputConfig.ControllerId == _controllerId);
 
             _resolver = CompositeResolver.Create(
                 new[] { new ConfigurationFileFormat.ConfigurationEnumFormatter<Key>() },
@@ -291,7 +277,7 @@ namespace Ryujinx.Ui
             _controllerTriggerThreshold.Value = 0;
         }
 
-        private void SetValues(object config)
+        private void SetValues(InputConfig config)
         {
             if (config is KeyboardConfig keyboardConfig)
             {
@@ -360,7 +346,7 @@ namespace Ryujinx.Ui
             }
         }
 
-        private object GetValues()
+        private InputConfig GetValues()
         {
             if (_inputDevice.ActiveId.StartsWith("keyboard"))
             {
@@ -660,8 +646,8 @@ namespace Ryujinx.Ui
 
             if (_inputDevice.ActiveId == "disabled" || _profile.ActiveId == null) return;
 
-            object config = null;
-            int    pos    = _profile.Active;
+            InputConfig config = null;
+            int pos = _profile.Active;
 
             if (_profile.ActiveId == "default")
             {
@@ -793,7 +779,7 @@ namespace Ryujinx.Ui
 
             if (_inputDevice.ActiveId == "disabled") return;
 
-            object        inputConfig   = GetValues();
+            InputConfig   inputConfig   = GetValues();
             ProfileDialog profileDialog = new ProfileDialog();
 
             if (inputConfig == null) return;
@@ -840,14 +826,14 @@ namespace Ryujinx.Ui
             }
             else
             {
-                int index = ConfigurationState.Instance.Hid.InputConfig.Value.IndexOf(_inputConfig);
-
                 if (_inputDevice.ActiveId == "disabled")
                 {
                     ConfigurationState.Instance.Hid.InputConfig.Value.Remove(_inputConfig);
                 }
                 else
                 {
+                    int index = ConfigurationState.Instance.Hid.InputConfig.Value.IndexOf(_inputConfig);        
+            
                     ConfigurationState.Instance.Hid.InputConfig.Value[index] = GetValues();
                 }
             }

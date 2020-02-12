@@ -1,22 +1,7 @@
 namespace Ryujinx.Common.Configuration.Hid
 {
-    public class KeyboardConfig
+    public class KeyboardConfig : InputConfig
     {
-        /// <summary>
-        /// Controller Device Index
-        /// </summary>
-        public int Index;
-
-        /// <summary>
-        ///  Controller's Type
-        /// </summary>
-        public ControllerType ControllerType;
-
-        /// <summary>
-        ///  Controller's ID
-        /// </summary>
-        public ControllerId ControllerId;
-
         /// <summary>
         /// Left JoyCon Keyboard Bindings
         /// </summary>

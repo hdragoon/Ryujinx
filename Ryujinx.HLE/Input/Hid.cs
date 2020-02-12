@@ -18,7 +18,7 @@ namespace Ryujinx.HLE.Input
         private KeyboardHeader _currentKeyboardHeader;
         private KeyboardEntry  _currentKeyboardEntry;
 
-        public List<BaseController> Controllers = new List<BaseController>();
+        public List<BaseController> Controllers { get; private set; } = new List<BaseController>();
 
         internal long HidPosition;
 

@@ -196,12 +196,12 @@ namespace Ryujinx.Configuration
             /// <summary>
             /// Input device configuration
             /// </summary>
-            public ReactiveObject<List<object>> InputConfig { get; private set; }
+            public ReactiveObject<List<InputConfig>> InputConfig { get; private set; }
 
             public HidSection()
             {
                 EnableKeyboard = new ReactiveObject<bool>();
-                InputConfig    = new ReactiveObject<List<object>>();
+                InputConfig    = new ReactiveObject<List<InputConfig>>();
             }
         }
 
@@ -277,7 +277,7 @@ namespace Ryujinx.Configuration
             List<ControllerConfig> controllerConfigList = new List<ControllerConfig>();
             List<KeyboardConfig>   keyboardConfigList   = new List<KeyboardConfig>();
 
-            foreach (object inputConfig in Hid.InputConfig.Value)
+            foreach (InputConfig inputConfig in Hid.InputConfig.Value)
             {
                 if (inputConfig is ControllerConfig controllerConfig)
                 {
@@ -369,7 +369,7 @@ namespace Ryujinx.Configuration
             Ui.CustomThemePath.Value               = "";
             Hid.EnableKeyboard.Value               = false;
 
-            Hid.InputConfig.Value = new List<object>
+            Hid.InputConfig.Value = new List<InputConfig>
             {
                 new KeyboardConfig
                 {
@@ -429,7 +429,7 @@ namespace Ryujinx.Configuration
                 return;
             }
 
-            List<object> inputConfig = new List<object>();
+            List<InputConfig> inputConfig = new List<InputConfig>();
             foreach (ControllerConfig controllerConfig in configurationFileFormat.ControllerConfig)
             {
                 inputConfig.Add(controllerConfig);
