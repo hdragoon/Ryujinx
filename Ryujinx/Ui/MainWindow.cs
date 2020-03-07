@@ -26,9 +26,9 @@ namespace Ryujinx.Ui
 
         private static HLE.Switch _emulationContext;
 
-        private static GlRenderer _gLWidget;
+        private static GlRenderer _glWidget;
 
-        private static AutoResetEvent _screenExitStatus = new AutoResetEvent(false);
+        private static AutoResetEvent _deviceExitStatus = new AutoResetEvent(false);
 
         private static ListStore _tableStore;
 
@@ -42,14 +42,15 @@ namespace Ryujinx.Ui
 #pragma warning disable CS0649
 #pragma warning disable IDE0044
 
-        [GUI] Window         _mainWin;
         [GUI] MenuBar        _menuBar;
         [GUI] Box            _footerBox;
+        [GUI] Box            _statusBar;
         [GUI] MenuItem       _stopEmulation;
         [GUI] MenuItem       _fullScreen;
         [GUI] CheckMenuItem  _favToggle;
         [GUI] MenuItem       _firmwareInstallDirectory;
         [GUI] MenuItem       _firmwareInstallFile;
+        [GUI] Label          _hostStatus;
         [GUI] MenuItem       _openDebugger;
         [GUI] CheckMenuItem  _iconToggle;
         [GUI] CheckMenuItem  _developerToggle;
@@ -60,14 +61,16 @@ namespace Ryujinx.Ui
         [GUI] CheckMenuItem  _fileExtToggle;
         [GUI] CheckMenuItem  _pathToggle;
         [GUI] CheckMenuItem  _fileSizeToggle;
+        [GUI] Label          _gameStatus;
         [GUI] TreeView       _gameTable;
         [GUI] TreeSelection  _gameTableSelection;
         [GUI] ScrolledWindow _gameTableWindow;
         [GUI] Label          _progressLabel;
         [GUI] Label          _firmwareVersionLabel;
         [GUI] LevelBar       _progressBar;
-        [GUI] Box            _listStatusBox;
         [GUI] Box            _viewBox;
+        [GUI] Label          _vSyncStatus;
+        [GUI] Box            _listStatusBox;
 
 #pragma warning restore CS0649
 #pragma warning restore IDE0044
@@ -78,12 +81,15 @@ namespace Ryujinx.Ui
         {
             builder.Autoconnect(this);
 
-            this.Icon = new Gdk.Pixbuf(Assembly.GetExecutingAssembly(), "Ryujinx.Ui.assets.Icon.png");
+            this.DeleteEvent      += Window_Close;
+            _fullScreen.Activated += FullScreen_Toggled;
 
-            DeleteEvent += Window_Close;
+            this.Icon  = new Gdk.Pixbuf(Assembly.GetExecutingAssembly(), "Ryujinx.Ui.assets.Icon.png");
+            this.Title = $"Ryujinx {Program.Version}";
 
             ApplicationLibrary.ApplicationAdded        += Application_Added;
             ApplicationLibrary.ApplicationCountUpdated += ApplicationCount_Updated;
+            GlRenderer.StatusUpdatedEvent              += Update_StatusBar;
 
             _gameTable.ButtonReleaseEvent += Row_Clicked;
 
@@ -154,7 +160,7 @@ namespace Ryujinx.Ui
 
             Task.Run(RefreshFirmwareLabel);
 
-            _fullScreen.Activated += FullScreen_Toggled;
+            _statusBar.Hide();
         }
 
 #if USE_DEBUGGING
@@ -350,7 +356,7 @@ namespace Ryujinx.Ui
 
                 _emulationContext = device;
 
-                _screenExitStatus.Reset();
+                _deviceExitStatus.Reset();
 
 #if MACOS_BUILD
                 CreateGameWindow(device);
@@ -388,74 +394,84 @@ namespace Ryujinx.Ui
                 device.Hid.InitializeController(inputConfig.ControllerId, inputConfig.ControllerType);
             }
 
-            _gLWidget?.Exit();
-            _gLWidget?.Dispose();
-            _gLWidget = new GlRenderer(_emulationContext);
+            _glWidget = new GlRenderer(_emulationContext);
 
             Application.Invoke(delegate
             {
                 _viewBox.Remove(_gameTableWindow);
-                _gLWidget.Expand = true;
-                _viewBox.Child = _gLWidget;
+                _glWidget.Expand = true;
+                _viewBox.Child = _glWidget;
 
-                _gLWidget.ShowAll();
-                _listStatusBox.Hide();
+                _glWidget.ShowAll();
+                EditFooterForGameRender();
             });
 
-            _gLWidget.WaitEvent.WaitOne();
+            _glWidget.WaitEvent.WaitOne();
 
-            _gLWidget.Start();
+            _glWidget.Start();
 
+            device.Dispose();
+            _deviceExitStatus.Set();
+
+            // NOTE: Everything that is here will not be executed when you close the UI.
             Application.Invoke(delegate
             {
-                _viewBox.Remove(_gLWidget);
-                _gLWidget.Exit();
+                _viewBox.Remove(_glWidget);
+                _glWidget.Exit();
 
-                if(_gLWidget.Window != this.Window && _gLWidget.Window != null)
+                if(_glWidget.Window != this.Window && _glWidget.Window != null)
                 {
-                    _gLWidget.Window.Dispose();
+                    _glWidget.Window.Dispose();
                 }
+
+                _glWidget.Dispose();
 
                 _viewBox.Add(_gameTableWindow);
 
                 _gameTableWindow.Expand = true;
 
-                this.Window.Title = "Ryujinx";
+                this.Window.Title = $"Ryujinx {Program.Version}";
 
-                _listStatusBox.ShowAll();
+                _emulationContext = null;
+                _gameLoaded       = false;
+                _glWidget         = null;
+
+                DiscordIntegrationModule.SwitchToMainMenu();
+
+                RecreateFooterForMenu();
 
                 UpdateColumns();
                 UpdateGameTable();
 
                 Task.Run(RefreshFirmwareLabel);
-            });
 
-            device.Dispose();
-
-            _emulationContext = null;
-            _gameLoaded       = false;
-            _gLWidget         = null;
-
-            DiscordIntegrationModule.SwitchToMainMenu();
-
-            Application.Invoke(delegate
-            {
                 _stopEmulation.Sensitive            = false;
                 _firmwareInstallFile.Sensitive      = true;
                 _firmwareInstallDirectory.Sensitive = true;
             });
+        }
 
-            _screenExitStatus.Set();
+        private void RecreateFooterForMenu()
+        {
+            _listStatusBox.Show();
+            _statusBar.Hide();
+        }
+
+        private void EditFooterForGameRender()
+        {
+            _listStatusBox.Hide();
+            _statusBar.Show();
         }
 
         public void ToggleExtraWidgets(bool show)
         {
-            if (_gLWidget != null)
+            if (_glWidget != null)
             {
                 if (show)
                 {
                     _menuBar.ShowAll();
-                    _footerBox.ShowAll();
+                    _footerBox.Show();
+                    _statusBar.Show();
                 }
                 else
                 {
@@ -466,7 +482,7 @@ namespace Ryujinx.Ui
 
             bool fullScreenToggled = this.Window.State.HasFlag(Gdk.WindowState.Fullscreen);
 
-            _fullScreen.Label = !fullScreenToggled ? "Exit Fullscreen" : "Enter Fullscreen";
+            _fullScreen.Label = fullScreenToggled ? "Exit Fullscreen" : "Enter Fullscreen";
         }
 
         private static void UpdateGameMetadata(string titleId)
@@ -506,10 +522,13 @@ namespace Ryujinx.Ui
             {
                 UpdateGameMetadata(device.System.TitleIdText);
 
-                if (_gLWidget != null)
+                if (_glWidget != null)
                 {
-                    _gLWidget.Exit();
-                    _screenExitStatus.WaitOne();
+                    // We tell the widget that we are exiting
+                    _glWidget.Exit();
+
+                    // Wait for the other thread to dispose the HLE context before exiting.
+                    _deviceExitStatus.WaitOne();
                 }
             }
 
@@ -578,6 +597,26 @@ namespace Ryujinx.Ui
                 }
 
                 _progressBar.Value = barValue;
+            });
+        }
+
+        private void Update_StatusBar(object sender, StatusUpdatedEventArgs args)
+        {
+            Application.Invoke(delegate
+            {
+                _hostStatus.Text = args.HostStatus;
+                _gameStatus.Text = args.GameStatus;
+
+                if (args.VSyncEnabled)
+                {
+                    _vSyncStatus.Attributes = new Pango.AttrList();
+                    _vSyncStatus.Attributes.Insert(new Pango.AttrForeground(11822, 60138, 51657));
+                }
+                else
+                {
+                    _vSyncStatus.Attributes = new Pango.AttrList();
+                    _vSyncStatus.Attributes.Insert(new Pango.AttrForeground(ushort.MaxValue, 17733, 21588));
+                }
             });
         }
 
@@ -672,7 +711,7 @@ namespace Ryujinx.Ui
 
         private void StopEmulation_Pressed(object sender, EventArgs args)
         {
-            _gLWidget?.Exit();
+            _glWidget?.Exit();
         }
 
         private void Installer_File_Pressed(object o, EventArgs args)
@@ -876,15 +915,11 @@ namespace Ryujinx.Ui
             {
                 Fullscreen();
 
-                _fullScreen.Label = "Exit Fullscreen";
-
                 ToggleExtraWidgets(false);
             }
             else
             {
                 Unfullscreen();
-
-                _fullScreen.Label = "Enter Fullscreen";
 
                 ToggleExtraWidgets(true);
             }

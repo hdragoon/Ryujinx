@@ -5,6 +5,7 @@ using Ryujinx.Configuration.System;
 using Ryujinx.HLE.FileSystem;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Reflection;
 
@@ -42,7 +43,6 @@ namespace Ryujinx.Ui
         [GUI] Label        _custThemePathLabel;
         [GUI] TreeView     _gameDirsBox;
         [GUI] Entry        _addGameDirBox;
-        [GUI] Entry        _logPath;
         [GUI] Entry        _graphicsShadersDumpPath;
         [GUI] ToggleButton _configureController1;
         [GUI] ToggleButton _configureController2;
@@ -179,8 +179,6 @@ namespace Ryujinx.Ui
                 _custThemePathLabel.Sensitive = false;
                 _browseThemePath.Sensitive    = false;
             }
-
-            _logPath.Buffer.Text = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Ryujinx.log");
         }
 
         //Events
@@ -241,6 +239,16 @@ namespace Ryujinx.Ui
             fileChooser.Dispose();
 
             _browseThemePath.SetStateFlags(0, true);
+        }
+
+        private void OpenLogsFolder_Pressed(object sender, EventArgs args)
+        {
+            Process.Start(new ProcessStartInfo()
+            {
+                FileName        = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Logs"),
+                UseShellExecute = true,
+                Verb            = "open"
+            });
         }
 
         private void ConfigureController_Pressed(object sender, EventArgs args, ControllerId controllerId)
