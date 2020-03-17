@@ -1,6 +1,7 @@
 using ARMeilleure.CodeGen.RegisterAllocators;
 using ARMeilleure.IntermediateRepresentation;
 using ARMeilleure.Translation;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 
@@ -101,6 +102,17 @@ namespace ARMeilleure.CodeGen.X86
                             }
                             break;
 
+                        case Instruction.Tailcall:
+                            if (callConv == CallConvName.Windows)
+                            {
+                                HandleTailcallWindowsAbi(block.Operations, stackAlloc, node, operation);
+                            } 
+                            else
+                            {
+                                HandleTailcallSystemVAbi(block.Operations, stackAlloc, node, operation);
+                            }
+                            break;
+
                         case Instruction.VectorInsert8:
                             if (!HardwareCapabilities.SupportsSse41)
                             {
@@ -184,7 +196,7 @@ namespace ARMeilleure.CodeGen.X86
 
                     operation.SetSource(1, src2);
                 }
-                else if (!HasConstSrc2(inst) || IsLongConst(src2))
+                else if (!HasConstSrc2(inst) || CodeGenCommon.IsLongConst(src2))
                 {
                     src2 = AddCopy(nodes, node, src2);
 
@@ -199,32 +211,55 @@ namespace ARMeilleure.CodeGen.X86
 
             switch (operation.Instruction)
             {
-                case Instruction.CompareAndSwap128:
+                case Instruction.CompareAndSwap:
                 {
-                    // Handle the many restrictions of the compare and exchange (16 bytes) instruction:
-                    // - The expected value should be in RDX:RAX.
-                    // - The new value to be written should be in RCX:RBX.
-                    // - The value at the memory location is loaded to RDX:RAX.
-                    void SplitOperand(Operand source, Operand lr, Operand hr)
+                    OperandType type = operation.GetSource(1).Type;
+
+                    if (type == OperandType.V128)
                     {
-                        nodes.AddBefore(node, new Operation(Instruction.VectorExtract, lr, source, Const(0)));
-                        nodes.AddBefore(node, new Operation(Instruction.VectorExtract, hr, source, Const(1)));
+                        // Handle the many restrictions of the compare and exchange (16 bytes) instruction:
+                        // - The expected value should be in RDX:RAX.
+                        // - The new value to be written should be in RCX:RBX.
+                        // - The value at the memory location is loaded to RDX:RAX.
+                        void SplitOperand(Operand source, Operand lr, Operand hr)
+                        {
+                            nodes.AddBefore(node, new Operation(Instruction.VectorExtract, lr, source, Const(0)));
+                            nodes.AddBefore(node, new Operation(Instruction.VectorExtract, hr, source, Const(1)));
+                        }
+
+                        Operand rax = Gpr(X86Register.Rax, OperandType.I64);
+                        Operand rbx = Gpr(X86Register.Rbx, OperandType.I64);
+                        Operand rcx = Gpr(X86Register.Rcx, OperandType.I64);
+                        Operand rdx = Gpr(X86Register.Rdx, OperandType.I64);
+
+                        SplitOperand(operation.GetSource(1), rax, rdx);
+                        SplitOperand(operation.GetSource(2), rbx, rcx);
+
+                        node = nodes.AddAfter(node, new Operation(Instruction.VectorCreateScalar, dest, rax));
+                        node = nodes.AddAfter(node, new Operation(Instruction.VectorInsert,       dest, dest, rdx, Const(1)));
+
+                        operation.SetDestinations(new Operand[] { rdx, rax });
+
+                        operation.SetSources(new Operand[] { operation.GetSource(0), rdx, rax, rcx, rbx });
                     }
+                    else
+                    {
+                        // Handle the many restrictions of the compare and exchange (32/64) instruction:
+                        // - The expected value should be in (E/R)AX.
+                        // - The value at the memory location is loaded to (E/R)AX.
 
-                    Operand rax = Gpr(X86Register.Rax, OperandType.I64);
-                    Operand rbx = Gpr(X86Register.Rbx, OperandType.I64);
-                    Operand rcx = Gpr(X86Register.Rcx, OperandType.I64);
-                    Operand rdx = Gpr(X86Register.Rdx, OperandType.I64);
+                        Operand expected = operation.GetSource(1);
 
-                    SplitOperand(operation.GetSource(1), rax, rdx);
-                    SplitOperand(operation.GetSource(2), rbx, rcx);
+                        Operand rax = Gpr(X86Register.Rax, expected.Type);
 
-                    node = nodes.AddAfter(node, new Operation(Instruction.VectorCreateScalar, dest, rax));
-                    node = nodes.AddAfter(node, new Operation(Instruction.VectorInsert,       dest, dest, rdx, Const(1)));
+                        nodes.AddBefore(node, new Operation(Instruction.Copy, rax, expected));
 
-                    operation.SetDestinations(new Operand[] { rdx, rax });
+                        operation.SetSources(new Operand[] { operation.GetSource(0), rax, operation.GetSource(2) });
 
-                    operation.SetSources(new Operand[] { operation.GetSource(0), rdx, rax, rcx, rbx });
+                        node = nodes.AddAfter(node, new Operation(Instruction.Copy, dest, rax));
+
+                        operation.Destination = rax;
+                    }
 
                     break;
                 }
@@ -829,6 +864,123 @@ namespace ARMeilleure.CodeGen.X86
             return node;
         }
 
+        private static void HandleTailcallSystemVAbi(IntrusiveList<Node> nodes, StackAllocator stackAlloc, Node node, Operation operation)
+        {
+            List<Operand> sources = new List<Operand>();
+
+            sources.Add(operation.GetSource(0));
+
+            int argsCount = operation.SourcesCount - 1;
+
+            int intMax = CallingConvention.GetIntArgumentsOnRegsCount();
+            int vecMax = CallingConvention.GetVecArgumentsOnRegsCount();
+
+            int intCount = 0;
+            int vecCount = 0;
+
+            // Handle arguments passed on registers.
+            for (int index = 0; index < argsCount; index++)
+            {
+                Operand source = operation.GetSource(1 + index);
+
+                bool passOnReg;
+
+                if (source.Type.IsInteger())
+                {
+                    passOnReg = intCount + 1 < intMax;
+                }
+                else
+                {
+                    passOnReg = vecCount < vecMax;
+                }
+
+                if (source.Type == OperandType.V128 && passOnReg)
+                {
+                    // V128 is a struct, we pass each half on a GPR if possible.
+                    Operand argReg = Gpr(CallingConvention.GetIntArgumentRegister(intCount++), OperandType.I64);
+                    Operand argReg2 = Gpr(CallingConvention.GetIntArgumentRegister(intCount++), OperandType.I64);
+
+                    nodes.AddBefore(node, new Operation(Instruction.VectorExtract, argReg, source, Const(0)));
+                    nodes.AddBefore(node, new Operation(Instruction.VectorExtract, argReg2, source, Const(1)));
+
+                    continue;
+                }
+
+                if (passOnReg)
+                {
+                    Operand argReg = source.Type.IsInteger()
+                        ? Gpr(CallingConvention.GetIntArgumentRegister(intCount++), source.Type)
+                        : Xmm(CallingConvention.GetVecArgumentRegister(vecCount++), source.Type);
+
+                    Operation copyOp = new Operation(Instruction.Copy, argReg, source);
+
+                    HandleConstantCopy(nodes, nodes.AddBefore(node, copyOp), copyOp);
+
+                    sources.Add(argReg);
+                } 
+                else
+                {
+                    throw new NotImplementedException("Spilling is not currently supported for tail calls. (too many arguments)");
+                }
+            }
+
+            // The target address must be on the return registers, since we
+            // don't return anything and it is guaranteed to not be a
+            // callee saved register (which would be trashed on the epilogue).
+            Operand retReg = Gpr(CallingConvention.GetIntReturnRegister(), OperandType.I64);
+
+            Operation addrCopyOp = new Operation(Instruction.Copy, retReg, operation.GetSource(0));
+
+            nodes.AddBefore(node, addrCopyOp);
+
+            sources[0] = retReg;
+
+            operation.SetSources(sources.ToArray());
+        }
+
+        private static void HandleTailcallWindowsAbi(IntrusiveList<Node> nodes, StackAllocator stackAlloc, Node node, Operation operation)
+        {
+            int argsCount = operation.SourcesCount - 1;
+
+            int maxArgs = CallingConvention.GetArgumentsOnRegsCount();
+
+            if (argsCount > maxArgs)
+            {
+                throw new NotImplementedException("Spilling is not currently supported for tail calls. (too many arguments)");
+            }
+
+            Operand[] sources = new Operand[1 + argsCount];
+
+            // Handle arguments passed on registers.
+            for (int index = 0; index < argsCount; index++)
+            {
+                Operand source = operation.GetSource(1 + index);
+
+                Operand argReg = source.Type.IsInteger()
+                    ? Gpr(CallingConvention.GetIntArgumentRegister(index), source.Type)
+                    : Xmm(CallingConvention.GetVecArgumentRegister(index), source.Type);
+
+                Operation copyOp = new Operation(Instruction.Copy, argReg, source);
+
+                HandleConstantCopy(nodes, nodes.AddBefore(node, copyOp), copyOp);
+
+                sources[1 + index] = argReg;
+            }
+
+            // The target address must be on the return registers, since we
+            // don't return anything and it is guaranteed to not be a
+            // callee saved register (which would be trashed on the epilogue).
+            Operand retReg = Gpr(CallingConvention.GetIntReturnRegister(), OperandType.I64);
+
+            Operation addrCopyOp = new Operation(Instruction.Copy, retReg, operation.GetSource(0));
+
+            nodes.AddBefore(node, addrCopyOp);
+
+            sources[0] = retReg;
+
+            operation.SetSources(sources);
+        }
+
         private static void HandleLoadArgumentWindowsAbi(
             CompilerContext cctx,
             IntrusiveList<Node> nodes,
@@ -1046,7 +1198,7 @@ namespace ARMeilleure.CodeGen.X86
                 nodes.AddBefore(node, retCopyOp);
             }
 
-            operation.SetSources(new Operand[0]);
+            operation.SetSources(System.Array.Empty<Operand>());
         }
 
         private static void HandleReturnSystemVAbi(IntrusiveList<Node> nodes, Node node, Operation operation)
@@ -1114,20 +1266,6 @@ namespace ARMeilleure.CodeGen.X86
             }
 
             return value;
-        }
-
-        private static bool IsLongConst(Operand operand)
-        {
-            long value = operand.Type == OperandType.I32
-                ? operand.AsInt32()
-                : operand.AsInt64();
-
-            return !ConstFitsOnS32(value);
-        }
-
-        private static bool ConstFitsOnS32(long value)
-        {
-            return value == (int)value;
         }
 
         private static void Delete(IntrusiveList<Node> nodes, Node node, Operation operation)
