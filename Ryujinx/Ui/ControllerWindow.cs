@@ -787,7 +787,12 @@ namespace Ryujinx.Ui
             if (profileDialog.Run() == (int)ResponseType.Ok)
             {
                 string path = System.IO.Path.Combine(GetProfileBasePath(), profileDialog.FileName);
-                byte[] data = JsonSerializer.Serialize(inputConfig, _resolver);
+                byte[] data;
+
+                if (inputConfig is KeyboardConfig keyboardConfig)
+                    data = JsonSerializer.Serialize(keyboardConfig, _resolver);
+                else
+                    data = JsonSerializer.Serialize(inputConfig as ControllerConfig, _resolver);
 
                 File.WriteAllText(path, Encoding.UTF8.GetString(data, 0, data.Length).PrettyPrintJson());
             }

@@ -194,7 +194,9 @@ namespace Ryujinx.Configuration
             public ReactiveObject<bool> EnableKeyboard { get; private set; }
 
             /// <summary>
-            /// Input device configuration
+            /// Input device configuration.
+            /// NOTE: This ReactiveObject won't issue an event when the List has elements added or removed.
+            /// TODO: Implement a ReactiveList class.
             /// </summary>
             public ReactiveObject<List<InputConfig>> InputConfig { get; private set; }
 
