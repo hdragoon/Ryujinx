@@ -3,7 +3,9 @@
     public struct NpadControllerLeft
     {
         public ControllerInputId StickX;
+        public bool              InvertStickX;
         public ControllerInputId StickY;
+        public bool              InvertStickY;
         public ControllerInputId StickButton;
         public ControllerInputId ButtonMinus;
         public ControllerInputId ButtonL;

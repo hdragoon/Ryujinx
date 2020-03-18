@@ -406,6 +406,18 @@ namespace Ryujinx.Ui
                     (leftJoystickDx[i],  leftJoystickDy[i])  = keyboardController.GetLeftStick();
                     (rightJoystickDx[i], rightJoystickDy[i]) = keyboardController.GetRightStick();
 
+                    leftJoystick[i] = new JoystickPosition
+                    {
+                        Dx = leftJoystickDx[i],
+                        Dy = leftJoystickDy[i]
+                    };
+
+                    rightJoystick[i] = new JoystickPosition
+                    {
+                        Dx = rightJoystickDx[i],
+                        Dy = rightJoystickDy[i]
+                    };
+
                     if (hidKeyboard[i] == null)
                     {
                         hidKeyboard[i] = new HLE.Input.Keyboard
@@ -443,19 +455,19 @@ namespace Ryujinx.Ui
 
                     (leftJoystickDx[i],  leftJoystickDy[i])  = joystickController.GetLeftStick();
                     (rightJoystickDx[i], rightJoystickDy[i]) = joystickController.GetRightStick();
+
+                    leftJoystick[i] = new JoystickPosition
+                    {
+                        Dx = controllerConfig.LeftJoycon.InvertStickX ? -leftJoystickDx[i] : leftJoystickDx[i],
+                        Dy = controllerConfig.LeftJoycon.InvertStickY ? -leftJoystickDy[i] : leftJoystickDy[i]
+                    };
+
+                    rightJoystick[i] = new JoystickPosition
+                    {
+                        Dx = controllerConfig.RightJoycon.InvertStickX ? -rightJoystickDx[i] : rightJoystickDx[i],
+                        Dy = controllerConfig.RightJoycon.InvertStickY ? -rightJoystickDy[i] : rightJoystickDy[i]
+                    };
                 }
-
-                leftJoystick[i] = new JoystickPosition
-                {
-                    Dx = leftJoystickDx[i],
-                    Dy = leftJoystickDy[i]
-                };
-
-                rightJoystick[i] = new JoystickPosition
-                {
-                    Dx = rightJoystickDx[i],
-                    Dy = rightJoystickDy[i]
-                };
 
                 currentButton[i] |= _device.Hid.UpdateStickButtons(leftJoystick[i], rightJoystick[i]);
 

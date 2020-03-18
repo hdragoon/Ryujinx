@@ -45,7 +45,9 @@ namespace Ryujinx.Ui
         [GUI] Box          _triggerThresholdBox;
         [GUI] ComboBoxText _controllerType;
         [GUI] ToggleButton _lStickX;
+        [GUI] CheckButton  _invertLStickX;
         [GUI] ToggleButton _lStickY;
+        [GUI] CheckButton  _invertLStickY;
         [GUI] ToggleButton _lStickUp;
         [GUI] ToggleButton _lStickDown;
         [GUI] ToggleButton _lStickLeft;
@@ -59,7 +61,9 @@ namespace Ryujinx.Ui
         [GUI] ToggleButton _l;
         [GUI] ToggleButton _zL;
         [GUI] ToggleButton _rStickX;
+        [GUI] CheckButton  _invertRStickX;
         [GUI] ToggleButton _rStickY;
+        [GUI] CheckButton  _invertRStickY;
         [GUI] ToggleButton _rStickUp;
         [GUI] ToggleButton _rStickDown;
         [GUI] ToggleButton _rStickLeft;
@@ -136,7 +140,7 @@ namespace Ryujinx.Ui
             UpdateInputDeviceList();
             SetAvailableOptions();
             ClearValues();
-            SetCurrentValues();
+            if (_inputDevice.ActiveId != null) SetCurrentValues();
         }
 
         private void UpdateInputDeviceList()
@@ -242,36 +246,38 @@ namespace Ryujinx.Ui
 
         private void ClearValues()
         {
-            _lStickX.Label                    = "";
-            _lStickY.Label                    = "";
-            _lStickUp.Label                   = "";
-            _lStickDown.Label                 = "";
-            _lStickLeft.Label                 = "";
-            _lStickRight.Label                = "";
-            _lStickButton.Label               = "";
-            _dpadUp.Label                     = "";
-            _dpadDown.Label                   = "";
-            _dpadLeft.Label                   = "";
-            _dpadRight.Label                  = "";
-            _minus.Label                      = "";
-            _l.Label                          = "";
-            _zL.Label                         = "";
-            _lSl.Label                        = "";
-            _lSr.Label                        = "";
-            _rStickUp.Label                   = "";
-            _rStickDown.Label                 = "";
-            _rStickLeft.Label                 = "";
-            _rStickRight.Label                = "";
-            _rStickButton.Label               = "";
-            _a.Label                          = "";
-            _b.Label                          = "";
-            _x.Label                          = "";
-            _y.Label                          = "";
-            _plus.Label                       = "";
-            _r.Label                          = "";
-            _zR.Label                         = "";
-            _rSl.Label                        = "";
-            _rSr.Label                        = "";
+            _lStickX.Label                    = "Unbound";
+            _lStickY.Label                    = "Unbound";
+            _lStickUp.Label                   = "Unbound";
+            _lStickDown.Label                 = "Unbound";
+            _lStickLeft.Label                 = "Unbound";
+            _lStickRight.Label                = "Unbound";
+            _lStickButton.Label               = "Unbound";
+            _dpadUp.Label                     = "Unbound";
+            _dpadDown.Label                   = "Unbound";
+            _dpadLeft.Label                   = "Unbound";
+            _dpadRight.Label                  = "Unbound";
+            _minus.Label                      = "Unbound";
+            _l.Label                          = "Unbound";
+            _zL.Label                         = "Unbound";
+            _lSl.Label                        = "Unbound";
+            _lSr.Label                        = "Unbound";
+            _rStickX.Label                    = "Unbound";
+            _rStickY.Label                    = "Unbound";
+            _rStickUp.Label                   = "Unbound";
+            _rStickDown.Label                 = "Unbound";
+            _rStickLeft.Label                 = "Unbound";
+            _rStickRight.Label                = "Unbound";
+            _rStickButton.Label               = "Unbound";
+            _a.Label                          = "Unbound";
+            _b.Label                          = "Unbound";
+            _x.Label                          = "Unbound";
+            _y.Label                          = "Unbound";
+            _plus.Label                       = "Unbound";
+            _r.Label                          = "Unbound";
+            _zR.Label                         = "Unbound";
+            _rSl.Label                        = "Unbound";
+            _rSr.Label                        = "Unbound";
             _controllerDeadzoneLeft.Value     = 0;
             _controllerDeadzoneRight.Value    = 0;
             _controllerTriggerThreshold.Value = 0;
@@ -317,7 +323,9 @@ namespace Ryujinx.Ui
                 _controllerType.SetActiveId(controllerConfig.ControllerType.ToString());
 
                 _lStickX.Label                    = controllerConfig.LeftJoycon.StickX.ToString();
+                _invertLStickX.Active             = controllerConfig.LeftJoycon.InvertStickX;
                 _lStickY.Label                    = controllerConfig.LeftJoycon.StickY.ToString();
+                _invertLStickY.Active             = controllerConfig.LeftJoycon.InvertStickY;
                 _lStickButton.Label               = controllerConfig.LeftJoycon.StickButton.ToString();
                 _dpadUp.Label                     = controllerConfig.LeftJoycon.DPadUp.ToString();
                 _dpadDown.Label                   = controllerConfig.LeftJoycon.DPadDown.ToString();
@@ -329,7 +337,9 @@ namespace Ryujinx.Ui
                 _lSl.Label                        = controllerConfig.LeftJoycon.ButtonSl.ToString();
                 _lSr.Label                        = controllerConfig.LeftJoycon.ButtonSr.ToString();
                 _rStickX.Label                    = controllerConfig.RightJoycon.StickX.ToString();
+                _invertRStickX.Active             = controllerConfig.RightJoycon.InvertStickX;
                 _rStickY.Label                    = controllerConfig.RightJoycon.StickY.ToString();
+                _invertRStickY.Active             = controllerConfig.RightJoycon.InvertStickY;
                 _rStickButton.Label               = controllerConfig.RightJoycon.StickButton.ToString();
                 _a.Label                          = controllerConfig.RightJoycon.ButtonA.ToString();
                 _b.Label                          = controllerConfig.RightJoycon.ButtonB.ToString();
@@ -436,6 +446,11 @@ namespace Ryujinx.Ui
                 Enum.TryParse(_rSl.Label,          out controllerConfig.RightJoycon.ButtonSl);
                 Enum.TryParse(_rSr.Label,          out controllerConfig.RightJoycon.ButtonSr);
 
+                controllerConfig.LeftJoycon.InvertStickX  = _invertLStickX.Active;
+                controllerConfig.LeftJoycon.InvertStickY  = _invertLStickY.Active;
+                controllerConfig.RightJoycon.InvertStickX = _invertRStickX.Active;
+                controllerConfig.RightJoycon.InvertStickY = _invertRStickY.Active;
+
                 return controllerConfig;
             }
 
@@ -458,7 +473,7 @@ namespace Ryujinx.Ui
                 }
             }
 
-            pressedKey = default;
+            pressedKey = Key.Unbound;
 
             return false;
         }
@@ -507,7 +522,7 @@ namespace Ryujinx.Ui
                 return true;
             }
 
-            pressedButton = default;
+            pressedButton = ControllerInputId.Unbound;
 
             return false;
         }
@@ -703,38 +718,42 @@ namespace Ryujinx.Ui
                     {
                         Index            = 0,
                         ControllerType   = ControllerType.ProController,
-                        DeadzoneLeft     = 0.05f,
-                        DeadzoneRight    = 0.05f,
+                        DeadzoneLeft     = 0.1f,
+                        DeadzoneRight    = 0.1f,
                         TriggerThreshold = 0.5f,
                         LeftJoycon       = new NpadControllerLeft
                         {
-                            StickX      = ControllerInputId.Axis0,
-                            StickY      = ControllerInputId.Axis1,
-                            StickButton = ControllerInputId.Button8,
-                            DPadUp      = ControllerInputId.Hat0Up,
-                            DPadDown    = ControllerInputId.Hat0Down,
-                            DPadLeft    = ControllerInputId.Hat0Left,
-                            DPadRight   = ControllerInputId.Hat0Right,
-                            ButtonMinus = ControllerInputId.Button6,
-                            ButtonL     = ControllerInputId.Button4,
-                            ButtonZl    = ControllerInputId.Axis2,
-                            ButtonSl    = ControllerInputId.Button10,
-                            ButtonSr    = ControllerInputId.Button11,
+                            StickX       = ControllerInputId.Axis0,
+                            StickY       = ControllerInputId.Axis1,
+                            StickButton  = ControllerInputId.Button8,
+                            DPadUp       = ControllerInputId.Hat0Up,
+                            DPadDown     = ControllerInputId.Hat0Down,
+                            DPadLeft     = ControllerInputId.Hat0Left,
+                            DPadRight    = ControllerInputId.Hat0Right,
+                            ButtonMinus  = ControllerInputId.Button6,
+                            ButtonL      = ControllerInputId.Button4,
+                            ButtonZl     = ControllerInputId.Axis2,
+                            ButtonSl     = ControllerInputId.Button10,
+                            ButtonSr     = ControllerInputId.Button11,
+                            InvertStickX = false,
+                            InvertStickY = false
                         },
                         RightJoycon      = new NpadControllerRight
                         {
-                            StickX      = ControllerInputId.Axis3,
-                            StickY      = ControllerInputId.Axis4,
-                            StickButton = ControllerInputId.Button9,
-                            ButtonA     = ControllerInputId.Button1,
-                            ButtonB     = ControllerInputId.Button0,
-                            ButtonX     = ControllerInputId.Button3,
-                            ButtonY     = ControllerInputId.Button2,
-                            ButtonPlus  = ControllerInputId.Button7,
-                            ButtonR     = ControllerInputId.Button5,
-                            ButtonZr    = ControllerInputId.Axis5,
-                            ButtonSl    = ControllerInputId.Button12,
-                            ButtonSr    = ControllerInputId.Button13,
+                            StickX       = ControllerInputId.Axis3,
+                            StickY       = ControllerInputId.Axis4,
+                            StickButton  = ControllerInputId.Button9,
+                            ButtonA      = ControllerInputId.Button1,
+                            ButtonB      = ControllerInputId.Button0,
+                            ButtonX      = ControllerInputId.Button3,
+                            ButtonY      = ControllerInputId.Button2,
+                            ButtonPlus   = ControllerInputId.Button7,
+                            ButtonR      = ControllerInputId.Button5,
+                            ButtonZr     = ControllerInputId.Axis5,
+                            ButtonSl     = ControllerInputId.Button12,
+                            ButtonSr     = ControllerInputId.Button13,
+                            InvertStickX = false,
+                            InvertStickY = false
                         }
                     };
                 }

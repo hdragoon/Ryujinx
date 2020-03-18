@@ -25,7 +25,7 @@
     <property name="title" translatable="yes">Ryujinx - Controller Settings</property>
     <property name="modal">True</property>
     <property name="window_position">center</property>
-    <property name="default_width">1000</property>
+    <property name="default_width">1100</property>
     <property name="default_height">600</property>
     <child>
       <placeholder/>
@@ -499,6 +499,46 @@
                                       </packing>
                                     </child>
                                     <child>
+                                      <object class="GtkGrid">
+                                        <property name="visible">True</property>
+                                        <property name="can_focus">False</property>
+                                        <property name="margin_bottom">5</property>
+                                        <property name="row_spacing">3</property>
+                                        <property name="column_spacing">10</property>
+                                        <child>
+                                          <object class="GtkLabel">
+                                            <property name="width_request">80</property>
+                                            <property name="visible">True</property>
+                                            <property name="can_focus">False</property>
+                                            <property name="label" translatable="yes">LStick Button</property>
+                                            <property name="xalign">0</property>
+                                          </object>
+                                          <packing>
+                                            <property name="left_attach">0</property>
+                                            <property name="top_attach">0</property>
+                                          </packing>
+                                        </child>
+                                        <child>
+                                          <object class="GtkToggleButton" id="_lStickButton">
+                                            <property name="label" translatable="yes"> </property>
+                                            <property name="width_request">65</property>
+                                            <property name="visible">True</property>
+                                            <property name="can_focus">True</property>
+                                            <property name="receives_default">True</property>
+                                          </object>
+                                          <packing>
+                                            <property name="left_attach">1</property>
+                                            <property name="top_attach">0</property>
+                                          </packing>
+                                        </child>
+                                      </object>
+                                      <packing>
+                                        <property name="expand">False</property>
+                                        <property name="fill">True</property>
+                                        <property name="position">1</property>
+                                      </packing>
+                                    </child>
+                                    <child>
                                       <object class="GtkGrid" id="_leftStickKeyboard">
                                         <property name="visible">True</property>
                                         <property name="can_focus">False</property>
@@ -612,7 +652,7 @@
                                       <packing>
                                         <property name="expand">False</property>
                                         <property name="fill">True</property>
-                                        <property name="position">1</property>
+                                        <property name="position">2</property>
                                       </packing>
                                     </child>
                                     <child>
@@ -673,44 +713,30 @@
                                             <property name="top_attach">1</property>
                                           </packing>
                                         </child>
-                                      </object>
-                                      <packing>
-                                        <property name="expand">False</property>
-                                        <property name="fill">True</property>
-                                        <property name="position">2</property>
-                                      </packing>
-                                    </child>
-                                    <child>
-                                      <object class="GtkGrid">
-                                        <property name="visible">True</property>
-                                        <property name="can_focus">False</property>
-                                        <property name="margin_top">5</property>
-                                        <property name="row_spacing">3</property>
-                                        <property name="column_spacing">10</property>
                                         <child>
-                                          <object class="GtkLabel">
-                                            <property name="width_request">80</property>
+                                          <object class="GtkCheckButton" id="_invertLStickX">
+                                            <property name="label" translatable="yes">Invert</property>
                                             <property name="visible">True</property>
-                                            <property name="can_focus">False</property>
-                                            <property name="label" translatable="yes">LStick Button</property>
-                                            <property name="xalign">0</property>
+                                            <property name="can_focus">True</property>
+                                            <property name="receives_default">False</property>
+                                            <property name="draw_indicator">True</property>
                                           </object>
                                           <packing>
-                                            <property name="left_attach">0</property>
+                                            <property name="left_attach">2</property>
                                             <property name="top_attach">0</property>
                                           </packing>
                                         </child>
                                         <child>
-                                          <object class="GtkToggleButton" id="_lStickButton">
-                                            <property name="label" translatable="yes"> </property>
-                                            <property name="width_request">65</property>
+                                          <object class="GtkCheckButton" id="_invertLStickY">
+                                            <property name="label" translatable="yes">Invert</property>
                                             <property name="visible">True</property>
                                             <property name="can_focus">True</property>
-                                            <property name="receives_default">True</property>
+                                            <property name="receives_default">False</property>
+                                            <property name="draw_indicator">True</property>
                                           </object>
                                           <packing>
-                                            <property name="left_attach">1</property>
-                                            <property name="top_attach">0</property>
+                                            <property name="left_attach">2</property>
+                                            <property name="top_attach">1</property>
                                           </packing>
                                         </child>
                                       </object>
@@ -1292,6 +1318,46 @@
                                       </packing>
                                     </child>
                                     <child>
+                                      <object class="GtkGrid">
+                                        <property name="visible">True</property>
+                                        <property name="can_focus">False</property>
+                                        <property name="margin_bottom">5</property>
+                                        <property name="row_spacing">3</property>
+                                        <property name="column_spacing">10</property>
+                                        <child>
+                                          <object class="GtkLabel">
+                                            <property name="width_request">80</property>
+                                            <property name="visible">True</property>
+                                            <property name="can_focus">False</property>
+                                            <property name="label" translatable="yes">RStick Button</property>
+                                            <property name="xalign">0</property>
+                                          </object>
+                                          <packing>
+                                            <property name="left_attach">0</property>
+                                            <property name="top_attach">0</property>
+                                          </packing>
+                                        </child>
+                                        <child>
+                                          <object class="GtkToggleButton" id="_rStickButton">
+                                            <property name="label" translatable="yes"> </property>
+                                            <property name="width_request">65</property>
+                                            <property name="visible">True</property>
+                                            <property name="can_focus">True</property>
+                                            <property name="receives_default">True</property>
+                                          </object>
+                                          <packing>
+                                            <property name="left_attach">1</property>
+                                            <property name="top_attach">0</property>
+                                          </packing>
+                                        </child>
+                                      </object>
+                                      <packing>
+                                        <property name="expand">False</property>
+                                        <property name="fill">True</property>
+                                        <property name="position">1</property>
+                                      </packing>
+                                    </child>
+                                    <child>
                                       <object class="GtkGrid" id="_rightStickKeyboard">
                                         <property name="visible">True</property>
                                         <property name="can_focus">False</property>
@@ -1405,7 +1471,7 @@
                                       <packing>
                                         <property name="expand">False</property>
                                         <property name="fill">True</property>
-                                        <property name="position">1</property>
+                                        <property name="position">2</property>
                                       </packing>
                                     </child>
                                     <child>
@@ -1466,44 +1532,30 @@
                                             <property name="top_attach">1</property>
                                           </packing>
                                         </child>
-                                      </object>
-                                      <packing>
-                                        <property name="expand">False</property>
-                                        <property name="fill">True</property>
-                                        <property name="position">2</property>
-                                      </packing>
-                                    </child>
-                                    <child>
-                                      <object class="GtkGrid">
-                                        <property name="visible">True</property>
-                                        <property name="can_focus">False</property>
-                                        <property name="margin_top">5</property>
-                                        <property name="row_spacing">3</property>
-                                        <property name="column_spacing">10</property>
                                         <child>
-                                          <object class="GtkLabel">
-                                            <property name="width_request">80</property>
+                                          <object class="GtkCheckButton" id="_invertRStickX">
+                                            <property name="label" translatable="yes">Invert</property>
                                             <property name="visible">True</property>
-                                            <property name="can_focus">False</property>
-                                            <property name="label" translatable="yes">RStick Button</property>
-                                            <property name="xalign">0</property>
+                                            <property name="can_focus">True</property>
+                                            <property name="receives_default">False</property>
+                                            <property name="draw_indicator">True</property>
                                           </object>
                                           <packing>
-                                            <property name="left_attach">0</property>
+                                            <property name="left_attach">2</property>
                                             <property name="top_attach">0</property>
                                           </packing>
                                         </child>
                                         <child>
-                                          <object class="GtkToggleButton" id="_rStickButton">
-                                            <property name="label" translatable="yes"> </property>
-                                            <property name="width_request">65</property>
+                                          <object class="GtkCheckButton" id="_invertRStickY">
+                                            <property name="label" translatable="yes">Invert</property>
                                             <property name="visible">True</property>
                                             <property name="can_focus">True</property>
-                                            <property name="receives_default">True</property>
+                                            <property name="receives_default">False</property>
+                                            <property name="draw_indicator">True</property>
                                           </object>
                                           <packing>
-                                            <property name="left_attach">1</property>
-                                            <property name="top_attach">0</property>
+                                            <property name="left_attach">2</property>
+                                            <property name="top_attach">1</property>
                                           </packing>
                                         </child>
                                       </object>
