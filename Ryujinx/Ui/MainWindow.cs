@@ -414,7 +414,7 @@ namespace Ryujinx.Ui
             };
             
             device.Hid.Npads.AddControllers(new ControllerConfig {
-                PlayerId = HidControllerID.Player1,
+                Player = PlayerIndex.Player1,
                 Type = type
             });
 
