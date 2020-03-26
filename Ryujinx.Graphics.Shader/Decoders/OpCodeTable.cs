@@ -120,6 +120,10 @@ namespace Ryujinx.Graphics.Shader.Decoders
             Set("010011001100xx", InstEmit.Iadd3,   typeof(OpCodeAluCbuf));
             Set("0011100x1100xx", InstEmit.Iadd3,   typeof(OpCodeAluImm));
             Set("010111001100xx", InstEmit.Iadd3,   typeof(OpCodeAluReg));
+            Set("010010110100xx", InstEmit.Icmp,    typeof(OpCodeAluCbuf));
+            Set("0011011x0100xx", InstEmit.Icmp,    typeof(OpCodeAluImm));
+            Set("010110110100xx", InstEmit.Icmp,    typeof(OpCodeAluReg));
+            Set("010100110100xx", InstEmit.Icmp,    typeof(OpCodeAluRegCbuf));
             Set("010010100xxxxx", InstEmit.Imad,    typeof(OpCodeAluCbuf));
             Set("0011010x0xxxxx", InstEmit.Imad,    typeof(OpCodeAluImm));
             Set("010110100xxxxx", InstEmit.Imad,    typeof(OpCodeAluReg));
@@ -201,6 +205,7 @@ namespace Ryujinx.Graphics.Shader.Decoders
             Set("1101111101001x", InstEmit.Txq,     typeof(OpCodeTex));
             Set("1101111101010x", InstEmit.TxqB,    typeof(OpCodeTex));
             Set("01011111xxxxxx", InstEmit.Vmad,    typeof(OpCodeVideo));
+            Set("0011101xxxxxxx", InstEmit.Vmnmx,   typeof(OpCodeVideo));
             Set("0101000011011x", InstEmit.Vote,    typeof(OpCodeVote));
             Set("0100111xxxxxxx", InstEmit.Xmad,    typeof(OpCodeAluCbuf));
             Set("0011011x00xxxx", InstEmit.Xmad,    typeof(OpCodeAluImm));

@@ -153,6 +153,11 @@ namespace Ryujinx.Configuration
             public ReactiveObject<Region> Region { get; private set; }
 
             /// <summary>
+            /// Change System TimeZone
+            /// </summary>
+            public ReactiveObject<string> TimeZone { get; private set; }
+
+            /// <summary>
             /// Enables or disables Docked Mode
             /// </summary>
             public ReactiveObject<bool> EnableDockedMode { get; private set; }
@@ -181,6 +186,7 @@ namespace Ryujinx.Configuration
             {
                 Language                  = new ReactiveObject<Language>();
                 Region                    = new ReactiveObject<Region>();
+                TimeZone                  = new ReactiveObject<string>();
                 EnableDockedMode          = new ReactiveObject<bool>();
                 EnableMulticoreScheduling = new ReactiveObject<bool>();
                 EnableFsIntegrityChecks   = new ReactiveObject<bool>();
@@ -299,7 +305,7 @@ namespace Ryujinx.Configuration
 
             ConfigurationFileFormat configurationFile = new ConfigurationFileFormat
             {
-                Version                   = 3,
+                Version                   = ConfigurationFileFormat.CurrentVersion,
                 GraphicsShadersDumpPath   = Graphics.ShadersDumpPath,
                 LoggingEnableDebug        = Logger.EnableDebug,
                 LoggingEnableStub         = Logger.EnableStub,
@@ -312,6 +318,7 @@ namespace Ryujinx.Configuration
                 EnableFileLog             = Logger.EnableFileLog,
                 SystemLanguage            = System.Language,
                 SystemRegion              = System.Region,
+                SystemTimeZone            = System.TimeZone,
                 DockedMode                = System.EnableDockedMode,
                 EnableDiscordIntegration  = EnableDiscordIntegration,
                 EnableVsync               = Graphics.EnableVsync,
@@ -357,6 +364,7 @@ namespace Ryujinx.Configuration
             Logger.EnableFileLog.Value             = true;
             System.Language.Value                  = Language.AmericanEnglish;
             System.Region.Value                    = Region.USA;
+            System.TimeZone.Value                  = "UTC";
             System.EnableDockedMode.Value          = false;
             EnableDiscordIntegration.Value         = true;
             Graphics.EnableVsync.Value             = true;
@@ -432,7 +440,7 @@ namespace Ryujinx.Configuration
         {
             bool configurationFileUpdated = false;
 
-            if (configurationFileFormat.Version < 0 || configurationFileFormat.Version > 3)
+            if (configurationFileFormat.Version < 0 || configurationFileFormat.Version > ConfigurationFileFormat.CurrentVersion)
             {
                 Common.Logging.Logger.PrintWarning(LogClass.Application, $"Unsupported configuration version {configurationFileFormat.Version}, loading default.");
 
@@ -443,9 +451,18 @@ namespace Ryujinx.Configuration
 
             if (configurationFileFormat.Version < 3)
             {
-                Common.Logging.Logger.PrintWarning(LogClass.Application, $"Outdated configuration version {configurationFileFormat.Version}, needs to be updated.");
+                Common.Logging.Logger.PrintWarning(LogClass.Application, $"Outdated configuration version {configurationFileFormat.Version}, migrating to version 2.");
 
                 configurationFileFormat.SystemRegion = Region.USA;
+
+                configurationFileUpdated = true;
+            }
+
+            if (configurationFileFormat.Version < 3)
+            {
+                Common.Logging.Logger.PrintWarning(LogClass.Application, $"Outdated configuration version {configurationFileFormat.Version}, migrating to version 3.");
+
+                configurationFileFormat.SystemTimeZone = "UTC";
 
                 configurationFileUpdated = true;
             }
@@ -472,6 +489,7 @@ namespace Ryujinx.Configuration
             Logger.EnableFileLog.Value             = configurationFileFormat.EnableFileLog;
             System.Language.Value                  = configurationFileFormat.SystemLanguage;
             System.Region.Value                    = configurationFileFormat.SystemRegion;
+            System.TimeZone.Value                  = configurationFileFormat.SystemTimeZone;
             System.EnableDockedMode.Value          = configurationFileFormat.DockedMode;
             System.EnableDockedMode.Value          = configurationFileFormat.DockedMode;
             EnableDiscordIntegration.Value         = configurationFileFormat.EnableDiscordIntegration;
