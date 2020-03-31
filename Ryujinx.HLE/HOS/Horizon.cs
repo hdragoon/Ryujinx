@@ -120,6 +120,8 @@ namespace Ryujinx.HLE.HOS
         public ulong  TitleId { get; private set; }
         public string TitleIdText => TitleId.ToString("x16");
 
+        public string TitleVersionString { get; private set; }
+
         public IntegrityCheckLevel FsIntegrityCheckLevel { get; set; }
 
         public int GlobalAccessLogMode { get; set; }
@@ -371,6 +373,8 @@ namespace Ryujinx.HLE.HOS
                         TitleName = ControlData.Value.Titles.ToArray()
                             .FirstOrDefault(x => x.Name[0] != 0).Name.ToString();
                     }
+
+                    TitleVersionString = ControlData.Value.DisplayVersion.ToString();
                 }
             }
             else
@@ -561,6 +565,8 @@ namespace Ryujinx.HLE.HOS
             {
                 EnsureSaveData(new TitleId(TitleId));
             }
+
+            Logger.PrintInfo(LogClass.Loader, $"Application Loaded: {TitleName} [{TitleIdText}] [v{TitleVersionString}]");
         }
 
         private void LoadExeFs(IFileSystem codeFs, out Npdm metaData)
