@@ -48,6 +48,7 @@ namespace Ryujinx.Ui
         [GUI] TreeView     _gameDirsBox;
         [GUI] Entry        _addGameDirBox;
         [GUI] Entry        _graphicsShadersDumpPath;
+        [GUI] ComboBoxText _anisotropy;
         [GUI] ToggleButton _configureController1;
         [GUI] ToggleButton _configureController2;
         [GUI] ToggleButton _configureController3;
@@ -178,6 +179,7 @@ namespace Ryujinx.Ui
             _systemLanguageSelect.SetActiveId(ConfigurationState.Instance.System.Language.Value.ToString());
             _systemRegionSelect.SetActiveId(ConfigurationState.Instance.System.Region.Value.ToString());
             _systemTimeZoneSelect.SetActiveId(timeZoneContentManager.SanityCheckDeviceLocationName());
+            _anisotropy.SetActiveId(ConfigurationState.Instance.Graphics.MaxAnisotropy.Value.ToString());
 
             _custThemePath.Buffer.Text           = ConfigurationState.Instance.Ui.CustomThemePath;
             _graphicsShadersDumpPath.Buffer.Text = ConfigurationState.Instance.Graphics.ShadersDumpPath;
@@ -313,6 +315,7 @@ namespace Ryujinx.Ui
             ConfigurationState.Instance.Graphics.ShadersDumpPath.Value         = _graphicsShadersDumpPath.Buffer.Text;
             ConfigurationState.Instance.Ui.GameDirs.Value                      = gameDirs;
             ConfigurationState.Instance.System.FsGlobalAccessLogMode.Value     = (int)_fsLogSpinAdjustment.Value;
+            ConfigurationState.Instance.Graphics.MaxAnisotropy.Value           = float.Parse(_anisotropy.ActiveId);
 
             MainWindow.SaveConfig();
             MainWindow.ApplyTheme();

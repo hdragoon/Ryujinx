@@ -5,6 +5,8 @@ namespace Ryujinx.Ui
 {
     internal class GtkDialog : MessageDialog
     {
+        internal static bool _isExitDialogOpen = false;
+
         private GtkDialog(string title, string mainText, string secondaryText,
             MessageType messageType = MessageType.Other, ButtonsType buttonsType = ButtonsType.Ok) : base(null, DialogFlags.Modal, messageType, buttonsType, null)
         {
@@ -41,6 +43,37 @@ namespace Ryujinx.Ui
         internal static MessageDialog CreateConfirmationDialog(string mainText, string secondaryText = "")
         {
             return new GtkDialog("Ryujinx - Confirmation", mainText, secondaryText, MessageType.Question, ButtonsType.YesNo);
+        }
+
+        internal static bool CreateExitDialog()
+        {
+            if (_isExitDialogOpen)
+            {
+                return false;
+            }
+
+            _isExitDialogOpen = true;
+
+            MessageDialog messageDialog = new MessageDialog(null, DialogFlags.Modal, MessageType.Question, ButtonsType.OkCancel, null)
+            {
+                Title = "Ryujinx - Exit",
+                Icon = new Gdk.Pixbuf(Assembly.GetExecutingAssembly(), "Ryujinx.Ui.assets.Icon.png"),
+                Text = "Are you sure you want to stop emulation?",
+                SecondaryText = "All unsaved data will be lost",
+                WindowPosition = WindowPosition.Center
+            };
+
+            messageDialog.SetSizeRequest(100, 20);
+            ResponseType res = (ResponseType)messageDialog.Run();
+            messageDialog.Dispose();
+            _isExitDialogOpen = false;
+            
+            if (res == ResponseType.Ok)
+            {
+                return true;
+            } 
+            
+            return false;
         }
     }
 }

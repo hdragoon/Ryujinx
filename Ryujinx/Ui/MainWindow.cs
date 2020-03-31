@@ -84,6 +84,12 @@ namespace Ryujinx.Ui
         {
             builder.Autoconnect(this);
 
+            int monitorWidth  = Display.PrimaryMonitor.Geometry.Width  * Display.PrimaryMonitor.ScaleFactor;
+            int monitorHeight = Display.PrimaryMonitor.Geometry.Height * Display.PrimaryMonitor.ScaleFactor;
+
+            this.DefaultWidth  = monitorWidth < 1280 ? monitorWidth : 1280;
+            this.DefaultHeight = monitorHeight < 760 ? monitorHeight : 760;
+
             this.DeleteEvent      += Window_Close;
             _fullScreen.Activated += FullScreen_Toggled;
 
@@ -295,11 +301,48 @@ namespace Ryujinx.Ui
             }
             else
             {
+                if (ConfigurationState.Instance.Logger.EnableDebug.Value)
+                {
+                    MessageDialog debugWarningDialog = new MessageDialog(this, DialogFlags.Modal, MessageType.Warning, ButtonsType.YesNo, null)
+                    {
+                        Title         = "Ryujinx - Warning",
+                        Text          = "You have debug logging enabled, which is designed to be used by developers only.",
+                        SecondaryText = "For optimal performance, it's recommended to disable debug logging. Would you like to disable debug logging now?"
+                    };
+
+                    if (debugWarningDialog.Run() == (int)ResponseType.Yes)
+                    {
+                        ConfigurationState.Instance.Logger.EnableDebug.Value = false;
+                        SaveConfig();
+                    }
+
+                    debugWarningDialog.Dispose();
+                }
+
+                if (!string.IsNullOrWhiteSpace(ConfigurationState.Instance.Graphics.ShadersDumpPath.Value))
+                {
+                    MessageDialog shadersDumpWarningDialog = new MessageDialog(this, DialogFlags.Modal, MessageType.Warning, ButtonsType.YesNo, null)
+                    {
+                        Title         = "Ryujinx - Warning",
+                        Text          = "You have shader dumping enabled, which is designed to be used by developers only.",
+                        SecondaryText = "For optimal performance, it's recommended to disable shader dumping. Would you like to disable shader dumping now?"
+                    };
+
+                    if (shadersDumpWarningDialog.Run() == (int)ResponseType.Yes)
+                    {
+                        ConfigurationState.Instance.Graphics.ShadersDumpPath.Value = "";
+                        SaveConfig();
+                    }
+
+                    shadersDumpWarningDialog.Dispose();
+                }
+
                 Logger.RestartTime();
 
                 HLE.Switch device = InitializeSwitchInstance();
 
                 // TODO: Move this somewhere else + reloadable?
+                Graphics.Gpu.GraphicsConfig.MaxAnisotropy   = ConfigurationState.Instance.Graphics.MaxAnisotropy;
                 Graphics.Gpu.GraphicsConfig.ShadersDumpPath = ConfigurationState.Instance.Graphics.ShadersDumpPath;
 
                 if (Directory.Exists(path))
@@ -355,7 +398,9 @@ namespace Ryujinx.Ui
                 else
                 {
                     Logger.PrintWarning(LogClass.Application, "Please specify a valid XCI/NCA/NSP/PFS0/NRO file.");
-                    End(device);
+                    device.Dispose();
+
+                    return;
                 }
 
                 _emulationContext = device;

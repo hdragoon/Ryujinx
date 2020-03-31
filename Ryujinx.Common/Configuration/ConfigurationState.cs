@@ -225,6 +225,11 @@ namespace Ryujinx.Configuration
         public class GraphicsSection
         {
             /// <summary>
+            /// Max Anisotropy. Values range from 0 - 16. Set to -1 to let the game decide.
+            /// </summary>
+            public ReactiveObject<float> MaxAnisotropy { get; private set; }
+
+            /// <summary>
             /// Dumps shaders in this local directory
             /// </summary>
             public ReactiveObject<string> ShadersDumpPath { get; private set; }
@@ -236,6 +241,7 @@ namespace Ryujinx.Configuration
 
             public GraphicsSection()
             {
+                MaxAnisotropy   = new ReactiveObject<float>();
                 ShadersDumpPath = new ReactiveObject<string>();
                 EnableVsync     = new ReactiveObject<bool>();
             }
@@ -306,6 +312,7 @@ namespace Ryujinx.Configuration
             ConfigurationFileFormat configurationFile = new ConfigurationFileFormat
             {
                 Version                   = ConfigurationFileFormat.CurrentVersion,
+                MaxAnisotropy             = Graphics.MaxAnisotropy,
                 GraphicsShadersDumpPath   = Graphics.ShadersDumpPath,
                 LoggingEnableDebug        = Logger.EnableDebug,
                 LoggingEnableStub         = Logger.EnableStub,
@@ -352,6 +359,7 @@ namespace Ryujinx.Configuration
 
         public void LoadDefault()
         {
+            Graphics.MaxAnisotropy.Value           = -1;
             Graphics.ShadersDumpPath.Value         = "";
             Logger.EnableDebug.Value               = false;
             Logger.EnableStub.Value                = true;
@@ -449,7 +457,7 @@ namespace Ryujinx.Configuration
                 return;
             }
 
-            if (configurationFileFormat.Version < 3)
+            if (configurationFileFormat.Version < 2)
             {
                 Common.Logging.Logger.PrintWarning(LogClass.Application, $"Outdated configuration version {configurationFileFormat.Version}, migrating to version 2.");
 
@@ -466,10 +474,19 @@ namespace Ryujinx.Configuration
 
                 configurationFileUpdated = true;
             }
-
+            
             if (configurationFileFormat.Version < 4)
             {
                 Common.Logging.Logger.PrintWarning(LogClass.Application, $"Outdated configuration version {configurationFileFormat.Version}, migrating to version 4.");
+
+                configurationFileFormat.MaxAnisotropy = -1;
+
+                configurationFileUpdated = true;
+            }
+
+            if (configurationFileFormat.Version < 5)
+            {
+                Common.Logging.Logger.PrintWarning(LogClass.Application, $"Outdated configuration version {configurationFileFormat.Version}, migrating to version 5.");
 
                 configurationFileFormat.ControllerConfig = new List<ControllerConfig>();
                 configurationFileFormat.KeyboardConfig   = new List<KeyboardConfig>{
@@ -532,6 +549,7 @@ namespace Ryujinx.Configuration
                 inputConfig.Add(keyboardConfig);
             }
 
+            Graphics.MaxAnisotropy.Value           = configurationFileFormat.MaxAnisotropy;
             Graphics.ShadersDumpPath.Value         = configurationFileFormat.GraphicsShadersDumpPath;
             Logger.EnableDebug.Value               = configurationFileFormat.LoggingEnableDebug;
             Logger.EnableStub.Value                = configurationFileFormat.LoggingEnableStub;
