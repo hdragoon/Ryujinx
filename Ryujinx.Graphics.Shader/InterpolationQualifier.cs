@@ -3,7 +3,7 @@ using System;
 namespace Ryujinx.Graphics.Shader
 {
     [Flags]
-    enum InterpolationQualifier
+    public enum InterpolationQualifier
     {
         None = 0,
 
@@ -17,17 +17,18 @@ namespace Ryujinx.Graphics.Shader
         FlagsMask = Centroid | Sample
     }
 
-    static class InterpolationQualifierExtensions
+    public static class InterpolationQualifierExtensions
     {
         public static string ToGlslQualifier(this InterpolationQualifier iq)
         {
-            string output = (iq & ~InterpolationQualifier.FlagsMask) switch
+            string output = string.Empty;
+
+            switch (iq & ~InterpolationQualifier.FlagsMask)
             {
-                InterpolationQualifier.Flat => "flat",
-                InterpolationQualifier.NoPerspective => "noperspective",
-                InterpolationQualifier.Smooth => "smooth",
-                _ => string.Empty
-            };
+                case InterpolationQualifier.Flat:          output = "flat";          break;
+                case InterpolationQualifier.NoPerspective: output = "noperspective"; break;
+                case InterpolationQualifier.Smooth:        output = "smooth";        break;
+            }
 
             if ((iq & InterpolationQualifier.Centroid) != 0)
             {
