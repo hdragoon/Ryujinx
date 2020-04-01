@@ -12,6 +12,8 @@ namespace Ryujinx.Graphics.Shader.StructuredIr
 
         public VariableType VarType { get; set; }
 
+        public InterpolationQualifier Interpolation { get; }
+
         public int Value { get; }
 
         public int CbufSlot   { get; }
@@ -27,7 +29,8 @@ namespace Ryujinx.Graphics.Shader.StructuredIr
 
         public AstOperand(Operand operand) : this()
         {
-            Type = operand.Type;
+            Type          = operand.Type;
+            Interpolation = operand.Interpolation;
 
             if (Type == OperandType.ConstantBuffer)
             {

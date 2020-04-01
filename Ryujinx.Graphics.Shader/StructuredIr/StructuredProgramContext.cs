@@ -273,6 +273,8 @@ namespace Ryujinx.Graphics.Shader.StructuredIr
             if (TryGetUserAttributeIndex(operand, out int attrIndex))
             {
                 Info.IAttributes.Add(attrIndex);
+
+                Info.InterpolationQualifiers[attrIndex] = operand.Interpolation;
             }
             else if (operand.Type == OperandType.Attribute && operand.Value == AttributeConsts.InstanceId)
             {

@@ -5,9 +5,9 @@ namespace Ryujinx.Graphics.Shader.IntermediateRepresentation
 {
     static class OperandHelper
     {
-        public static Operand Attribute(int value)
+        public static Operand Attribute(int value, InterpolationQualifier iq = InterpolationQualifier.None)
         {
-            return new Operand(OperandType.Attribute, value);
+            return new Operand(OperandType.Attribute, value, iq);
         }
 
         public static Operand Cbuf(int slot, int offset)

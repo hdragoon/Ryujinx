@@ -14,6 +14,8 @@ namespace Ryujinx.Graphics.Shader.IntermediateRepresentation
 
         public int Value { get; }
 
+        public InterpolationQualifier Interpolation { get; }
+
         public INode AsgOp { get; set; }
 
         public HashSet<INode> UseOps { get; }
@@ -28,10 +30,11 @@ namespace Ryujinx.Graphics.Shader.IntermediateRepresentation
             Type = type;
         }
 
-        public Operand(OperandType type, int value) : this()
+        public Operand(OperandType type, int value, InterpolationQualifier iq = InterpolationQualifier.None) : this()
         {
-            Type  = type;
-            Value = value;
+            Type          = type;
+            Value         = value;
+            Interpolation = iq;
         }
 
         public Operand(Register reg) : this()
