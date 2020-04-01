@@ -14,6 +14,8 @@ namespace Ryujinx.Graphics.Shader.StructuredIr
         public HashSet<int> IAttributes { get; }
         public HashSet<int> OAttributes { get; }
 
+        public InterpolationQualifier[] InterpolationQualifiers { get; }
+
         public bool UsesInstanceId { get; set; }
 
         public HelperFunctionsMask HelperFunctionsMask { get; set; }
@@ -32,6 +34,8 @@ namespace Ryujinx.Graphics.Shader.StructuredIr
 
             IAttributes = new HashSet<int>();
             OAttributes = new HashSet<int>();
+
+            InterpolationQualifiers = new InterpolationQualifier[32];
 
             Samplers = new HashSet<AstTextureOperation>();
             Images   = new HashSet<AstTextureOperation>();

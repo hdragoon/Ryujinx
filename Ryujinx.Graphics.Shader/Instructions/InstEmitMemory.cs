@@ -96,27 +96,17 @@ namespace Ryujinx.Graphics.Shader.Instructions
         {
             OpCodeIpa op = (OpCodeIpa)context.CurrOp;
 
-            Operand res = Attribute(op.AttributeOffset);
+            InterpolationQualifier iq = InterpolationQualifier.None;
 
-            if (op.AttributeOffset >= AttributeConsts.UserAttributeBase &&
-                op.AttributeOffset <  AttributeConsts.UserAttributeEnd)
+            switch (op.Mode)
             {
-                int index = (op.AttributeOffset - AttributeConsts.UserAttributeBase) >> 4;
-
-                if (context.Config.ImapTypes[index].GetFirstUsedType() == PixelImap.Perspective)
-                {
-                    res = context.FPMultiply(res, Attribute(AttributeConsts.PositionW));
-                }
-            }
- 
-            if (op.Mode == InterpolationMode.Default)
-            {
-                Operand srcB = GetSrcB(context);
-
-                res = context.FPMultiply(res, srcB);
+                case InterpolationMode.Constant: iq = InterpolationQualifier.Flat;          break;
+                case InterpolationMode.Pass:     iq = InterpolationQualifier.NoPerspective; break;
             }
 
-            res = context.FPSaturate(res, op.Saturate);
+            Operand srcA = Attribute(op.AttributeOffset, iq);
+
+            Operand res = context.FPSaturate(srcA, op.Saturate);
 
             context.Copy(GetDest(context), res);
         }
