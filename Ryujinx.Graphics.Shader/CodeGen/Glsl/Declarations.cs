@@ -400,7 +400,9 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
         {
             for (int attr = 0; attr < MaxAttributes; attr++)
             {
-                context.AppendLine($"layout (location = {attr}) out vec4 {DefaultNames.OAttributePrefix}{attr};");
+                string iq = $"{DefineNames.OutQualifierPrefixName}{attr} ";
+
+                context.AppendLine($"layout (location = {attr}) {iq}out vec4 {DefaultNames.OAttributePrefix}{attr};");
             }
 
             foreach (int attr in info.OAttributes.OrderBy(x => x).Where(x => x >= MaxAttributes))
