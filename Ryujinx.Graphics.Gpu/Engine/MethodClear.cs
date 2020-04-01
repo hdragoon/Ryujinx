@@ -18,6 +18,12 @@ namespace Ryujinx.Graphics.Gpu.Engine
                 return;
             }
 
+            // Scissor affects clears aswell.
+            if (state.QueryModified(MethodOffset.ScissorState))
+            {
+                UpdateScissorState(state);
+            }
+
             UpdateRenderTargetState(state, useControl: false);
 
             TextureManager.CommitGraphicsBindings();
