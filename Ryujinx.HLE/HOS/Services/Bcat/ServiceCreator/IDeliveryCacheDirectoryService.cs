@@ -6,7 +6,7 @@ using Ryujinx.HLE.HOS.Services.Arp;
 namespace Ryujinx.HLE.HOS.Services.Bcat.ServiceCreator
 {
 	class IDeliveryCacheDirectoryService : IpcService
-    {    
+  {    
 		public IDeliveryCacheDirectoryService(ServiceCtx context, ApplicationLaunchProperty applicationLaunchProperty)
 		{
 		}
