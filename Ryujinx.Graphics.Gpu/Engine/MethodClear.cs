@@ -13,12 +13,7 @@ namespace Ryujinx.Graphics.Gpu.Engine
         /// <param name="argument">Method call argument</param>
         private void Clear(GpuState state, int argument)
         {
-            // Scissor affects clears aswell.
-            if (state.QueryModified(MethodOffset.ScissorState))
-            {
-                UpdateScissorState(state);
-            }
-			if (!GetRenderEnable(state))
+            if (!GetRenderEnable(state))
             {
                 return;
             }
